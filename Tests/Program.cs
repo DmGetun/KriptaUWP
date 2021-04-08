@@ -1,5 +1,7 @@
-﻿using System;
+﻿using App3.Помошники;
+using System;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Text.RegularExpressions;
 using UWP.Алгоритмы;
@@ -11,37 +13,30 @@ namespace Tests
     {
         static void Main(string[] args)
         {
-            var text_ = "1122334455667700ffeeddccbbaa9988";
-            string key = "8899aabbccddeeff0011223344556677fedcba98765432100123456789abcdef";
-            var a = Regex.Matches(key, @"(\w{8})");
-            var array = a.Select(i => i.Value).ToArray();
-            uint[] keys_ = array.Select(i => Convert.ToUInt32(i, 16)).ToArray();
-            var crypt = new AES();
-            array = Regex.Matches(text_, @"(\w{8})").Select(i => i.Value).ToArray();
-            var text = array.Select(i => Convert.ToUInt32(i, 16)).ToArray().Select(i => BitConverter.GetBytes(i)).ToArray();
-            byte[] _text_ = new byte[16];
-            int i = 0;
-            foreach (byte[] arr in text)
-            {
-                foreach (byte b in arr)
-                {
-                    _text_[i++] = b;
-                }
-            }
-            Config config = new Config();
-            byte[] _keys_ = new byte[keys_.Length * 4];
-            i = 0;
-            foreach(uint num in keys_)
-            {
-                Array.Copy(BitConverter.GetBytes(num), 0, _keys_, i * 4, 4);
-                i++;
-            }
-            config.Key = Encoding.Unicode.GetString(_keys_);
-            var res = crypt.Encrypt(Encoding.Unicode.GetString(_text_), config);
-            string result = "4ee901e5c2d8ca3d";
-            var c = Regex.Matches(result, @"(\w{8})").Select(i => i.Value).ToArray();
-            text = c.Select(i => Convert.ToUInt32(i, 16)).ToArray().Select(i => BitConverter.GetBytes(i)).ToArray();
+            Stribog stribog = new Stribog();
+            string text = @"Вот пример статьи на 1000 символов. Это достаточно маленький текст 
+оптимально подходящий для карточек товаров в интернет - магазинах или для небольших информационных публикаций.
+В таком тексте редко бывает более 2 - 3 абзацев и обычно один подзаголовок.Но можно и без него.
+На 1000 символов рекомендовано использовать 1 - 2 ключа и одну картину.
+
+Текст на 1000 символов – это сколько примерно слов? Статистика Word показывает, 
+что «тысяча» включает в себя 150 - 200 слов средней величины.Но, если злоупотреблять предлогами, 
+союзами и другими частями речи на 1 - 2 символа, то количество слов неизменно возрастает.
+
+В копирайтерской деятельности принято считать «тысячи» с пробелами или без. 
+Учет пробелов увеличивает объем текста примерно на 100 - 200 символов – именно столько раз мы разделяем слова
+свободным пространством. Считать пробелы заказчики не любят, так как это «пустое место». 
+Однако некоторые фирмы и биржи видят справедливым ставить стоимость за 1000 символов с пробелами, 
+считая последние важным элементом качественного восприятия. Согласитесь, читать слитный текст без единого пропуска, никто не будет. 
+Но большинству нужна цена за 1000 знаков без пробелов.";
+
+            Console.WriteLine("Исходные данные:");
+            byte[] message = Encoding.Unicode.GetBytes(text);
+            Console.WriteLine(text);
+            byte[] res = stribog.GetHashMessage(message);
             Console.WriteLine();
+            Console.WriteLine("Полученный хеш:");
+            Console.WriteLine(BitConverter.ToString(res));
         }
     }
 }

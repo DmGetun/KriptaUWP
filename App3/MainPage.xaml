@@ -36,7 +36,7 @@
             <TextBox x:Name="plainTextArea" Margin="5,30,0,0" Grid.Row="3" Grid.Column="1" TextWrapping="Wrap" Grid.RowSpan="1" PlaceholderText="Расшифрованная фраза"/>
             <TextBlock Grid.Row="1" Grid.Column="1" Margin="10,7,0,0" Text="Вид ключа и ошибки:"></TextBlock>
             <TextBox x:Name="ErrorArea" Margin="5,30,0,0" Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Grid.RowSpan="1" PlaceholderText="Сообщения об ошибке" IsReadOnly="True"/>
-            <TextBlock Grid.Row="0" Grid.Column="1" Margin="10,7,0,0" Text="Вид внутри программы:"></TextBlock>
+            <TextBlock Grid.Row="0" Grid.Column="1" Margin="5,0,0,0" Text="Вид внутри программы:"></TextBlock>
             <TextBox x:Name="ViewText" Margin="5,20,0,0" Grid.Row="0" Grid.Column="1" TextWrapping="Wrap" Grid.RowSpan="1" PlaceholderText="Вид внутри программы" IsReadOnly="True"/>
         </Grid>
     </Grid>

@@ -15,7 +15,7 @@ namespace UWP.Помошники
 
         public Elliptic(BigInteger a, BigInteger b, BigInteger p)
         {
-            if (!CheckK(a, b, p)) throw new Error("asd");
+            if (!CheckK(a, b, p)) throw new Error("Параметры a,b не соответствуют условиям");
             this.a = a;
             this.b = b;
             this.p = p;
@@ -31,27 +31,15 @@ namespace UWP.Помошники
         public Point GetValue(int number, Point point)
         {
             string num = Convert.ToString(number, 2);
-            Point rez = new Point(0, 0);
-            BigInteger x = point.X;
-            BigInteger y = point.Y;
+            Point rez = new Point(point.X,point.Y);
 
-            for (int i = 0; i < num.Length; i++)
+            for (int i = 1; i < num.Length; i++)
             {
-                if(i == 0)
-                {
-                    rez = point;
-                    continue;
-                }
                 int index = Convert.ToInt32(char.GetNumericValue(num[i]));
                 if(index == 1)
-                {
-                    Point dou = DoublePoint(rez); 
-                    rez = SumPoint(DoublePoint(rez), point);
-                }
+                    rez = SumPoint(DoublePoint(rez), point);  
                 else
-                {
-                    rez = DoublePoint(rez);
-                }
+                    rez = DoublePoint(rez);       
             }
 
             return rez;
@@ -73,8 +61,6 @@ namespace UWP.Помошники
 
         private Point DoublePoint(Point point)
         {
-            Point rez = new Point(0, 0);
-
             int x = (int)point.X;
             int y = (int)point.Y;
 
@@ -90,9 +76,8 @@ namespace UWP.Помошники
             return new Point((int)x3,(int)y3);
         }
 
-        private Point SumPoint(Point point1,Point point2)
+        public Point SumPoint(Point point1,Point point2)
         {
-            Point rez = new Point(0, 0);
             BigInteger x1 = point1.X;
             BigInteger y1 = point1.Y;
             BigInteger x2 = point2.X;
@@ -123,6 +108,51 @@ namespace UWP.Помошники
             if (n > 1)
                 result -= result / n;
             return result;
+        }
+
+        public BigInteger Calculate_Q()
+        {
+            uint pointCount = 0;
+            List<int> squareY = new List<int>();
+            for(int y = 0; y <= 9; y++)
+            {
+                squareY.Add((int)Math.Pow(y, 2) % (int)p);
+            }
+            for(int x = 0; x <= 10; x++)
+            {
+                int y = ((int)Math.Pow(x, 3) + (int)a * x + (int)b) % (int)p;
+                if (squareY.IndexOf(y) != -1)
+                    pointCount += 2;
+            }
+            pointCount += 1;
+
+            var rez = TrialDivision(pointCount);
+            if (rez.Count == 1)
+                rez.Add(1);
+            uint cof = rez.Min();
+            uint q = pointCount / cof;
+
+            return new BigInteger(q);
+        }
+
+        static List<uint> TrialDivision(uint n)
+        {
+            var divides = new List<uint>();
+            var div = 2u;
+            while (n > 1)
+            {
+                if (n % div == 0)
+                {
+                    divides.Add(div);
+                    n /= div;
+                }
+                else
+                {
+                    div++;
+                }
+            }
+
+            return divides;
         }
     }
 }

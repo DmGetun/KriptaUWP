@@ -172,7 +172,10 @@ namespace App3
             listAlgorithm.Add(new ECC()); // ECC шифр
             listAlgorithm.Add(new RSACP()); // ЦП RSA
             listAlgorithm.Add(new ElgamalCP()); // ЦП Elgamal
-            listAlgorithm.Add(new GOST28147()); // ЦП Elgamal
+            listAlgorithm.Add(new GOST28147()); // ГОСТ 28147-89
+            listAlgorithm.Add(new GOST341094()); // ГОСТ Р 34.10-94
+            listAlgorithm.Add(new GOST34102012()); // ГОСТ Р 34.10-94
+            listAlgorithm.Add(new DiffieHellman()); // Обмен ключами
 
             foreach (Algorithm alg in listAlgorithm)
             {

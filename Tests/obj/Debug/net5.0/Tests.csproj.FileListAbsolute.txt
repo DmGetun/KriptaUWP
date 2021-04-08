@@ -13,3 +13,4 @@ C:\Users\Admin\source\repos\App3\Tests\obj\Debug\net5.0\Tests.dll
 C:\Users\Admin\source\repos\App3\Tests\obj\Debug\net5.0\ref\Tests.dll
 C:\Users\Admin\source\repos\App3\Tests\obj\Debug\net5.0\Tests.pdb
 C:\Users\Admin\source\repos\App3\Tests\obj\Debug\net5.0\Tests.genruntimeconfig.cache
+C:\Users\Admin\source\repos\App3\Tests\obj\Debug\net5.0\Tests.csprojAssemblyReference.cache

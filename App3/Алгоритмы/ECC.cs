@@ -12,11 +12,11 @@ namespace UWP.Алгоритмы
     {
         public override string Name => "Шифр ЕСС";
 
-        public override string DefaultKey => "a=2\rb=7\rp=11\rk=4\rCu=6\rG=(10,9)";
+        public override string DefaultKey => "a=5\rb=7\rp=47\rk=4\rCu=6\rG=(3,7)";
 
         public string Key { get; private set; }
 
-        public override bool IsReplaceText => false;
+        public override bool IsReplaceText => true;
 
         public int Cu { get; private set; }
         public Point Du { get; private set; }
@@ -25,7 +25,12 @@ namespace UWP.Алгоритмы
         {
             throw new NotImplementedException();
         }
-
+        /*
+            Метод формирования ключей.
+            Получаем на вход строку с указанными параметрами,
+            разбиваем её на строки с каждым параметром,
+            вырезаем числовые значения и конвертируем в числа.
+        */
         private int[] ParseKey(string key)
         {
             string[] keys = key.Split('\r');
@@ -52,13 +57,26 @@ namespace UWP.Алгоритмы
 
             return numbers;
         }
-
+        /*
+            Функция расшифрования.
+            Разбиваем ключ, разбиваем текст.
+            Заносим параметры из ключа в переменные,
+            создаем объект эллептической кривой с 
+            переданными параметрами.
+            Считаем точку Q,
+            в цикле проходимся по всем номерам зашифрованных символов
+            и возводим эти номера в степерь координаты X точки Q по модулю p,
+            по полученному индексу получаем символ из алфавита.
+        */
         public override string Decrypt(string cipherText, Config config)
         {
             int[] keys = ParseKey(config.Key);
+            var alf = Alphabet.GenerateAlphabet();
 
             int[] values = ParseText(cipherText);
-            int e = values[2];
+            int[] e = new int[values.Length - 2];
+            for(int i = 2; i < values.Length;i++)
+                e[i - 2] = values[i];
 
             BigInteger a = keys[0];
             BigInteger b = keys[1];
@@ -67,41 +85,58 @@ namespace UWP.Алгоритмы
             Cu = keys[4];
 
             Elliptic elliptic = new Elliptic(a, b, p);
-            Point R = elliptic.CheckPoint(new Point(values[0], values[1]));
+            //Point R = elliptic.CheckPoint(new Point(values[0], values[1]));
+            Point R = new Point(values[0], values[1]);
 
             int f = (int)F(p) - 1;
 
             Point Q = elliptic.GetValue(Cu, R);
+            StringBuilder str = new StringBuilder();
+            foreach(int number in e)
+            {
+                BigInteger M = (number * BigInteger.Pow(Q.X,f)) % p;
+                str.Append(alf[(int)M]);
+            }
 
-            BigInteger M = (e * BigInteger.Pow(Q.X,f)) % p;
-           
-            return string.Format("Расшифрованная подпись: {0}", M);
+            return str.ToString();
         }
-
+        /*
+            Фукнция разбиения зашифрованного текста.
+            Вырезаем координаты точки R,
+            далее за ней идут зашифрованные значения символов,
+            вырезаем их и добавляем в массив.
+        */
         private int[] ParseText(string cipherText)
         {
             cipherText = cipherText.Substring(cipherText.IndexOf(":") + 1);
             cipherText = cipherText.Replace("(", "").Replace(")", "");
             string[] rez = cipherText.Split(",");
-            int[] numbers = new int[rez.Length];
-            for(int i = 0; i < rez.Length; i++)
+            int[] indexes = rez[2].Split(' ',StringSplitOptions.RemoveEmptyEntries).Select(i => int.Parse(i)).ToArray();
+            int[] numbers = new int[rez.Length - 1 + indexes.Length];
+            numbers[0] = int.Parse(rez[0]);
+            numbers[1] = int.Parse(rez[1]);
+            for(int i = 0;i < indexes.Length; i++)
             {
-                int num = 0;
-                if (!int.TryParse(rez[i], out num)) throw new Error("Ошибка перевода подписи");
-                numbers[i] = num;
+                numbers[i + 2] = indexes[i];
             }
 
             return numbers;
         }
-
+        /*
+            Функция шифрования.
+            Получаем ключ и текст, разбиваем ключ по переменным.
+            Создаем объект эллептической кривой с переданными параметрами,
+            Вычисляем точку Du, R и P
+            В цикле получаем индекс буквы в алфавите,
+            возводим её в степень координаты X Точки P по модулю p,
+            добавляем в массив зашифрованных обозначений.
+            Из массива формируем строку.
+        */
         public override string Encrypt(string plainText, Config config)
         {
             int[] keys = ParseKey(config.Key);
             var alf = Alphabet.GenerateAlphabet();
             Key = config.Key;
-            int m = 0;
-
-            if (!int.TryParse(plainText, out m)) throw new Error("Ошибка: шифровать нужно число");
 
             BigInteger a = keys[0];
             BigInteger b = keys[1];
@@ -121,12 +156,13 @@ namespace UWP.Алгоритмы
             int i = 0;
             foreach(char s in plainText)
             {
-
+                int index = Alphabet.GetSymbol(alf, s);
+                mass[i++] = (index * P.X) % p;
             }
-
-            BigInteger e = (m * P.X) % p;
-
-            return string.Format("Пользователю будет отправлено:(({0},{1}),{2})",R.X,R.Y,e);
+            StringBuilder str = new StringBuilder();
+            foreach (int num in mass)
+                str.Append(num + " ");
+            return string.Format("Пользователю будет отправлено:(({0},{1}),{2})",R.X,R.Y,str);
         }
 
         public override string GenerateKey()
@@ -140,7 +176,9 @@ namespace UWP.Алгоритмы
             string two = string.Format("Открытый ключ: {0}", Du.ToString());
             return one + two;
         }
-
+        /*
+            Метод вычисления функции Эйлера.
+        */
         private static BigInteger F(BigInteger n)
         {
             BigInteger result = n;

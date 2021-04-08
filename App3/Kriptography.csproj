@@ -131,12 +131,14 @@
     <Compile Include="Алгоритмы\Belazo.cs" />
     <Compile Include="Алгоритмы\Bloknot.cs" />
     <Compile Include="Алгоритмы\Cezar.cs" />
+    <Compile Include="Алгоритмы\GOST34102012.cs" />
     <Compile Include="Алгоритмы\DiffieHellman.cs" />
     <Compile Include="Алгоритмы\ECC.cs" />
     <Compile Include="Алгоритмы\Elgamal.cs" />
     <Compile Include="Алгоритмы\ElgamalCP.cs" />
     <Compile Include="Алгоритмы\GammaGost28147.cs" />
     <Compile Include="Алгоритмы\GOST28147.cs" />
+    <Compile Include="Алгоритмы\GOST341094.cs" />
     <Compile Include="Алгоритмы\Kardano.cs" />
     <Compile Include="Алгоритмы\Kuznec.cs" />
     <Compile Include="Алгоритмы\Magma.cs" />
@@ -155,6 +157,7 @@
     <Compile Include="Помошники\GenPCH.cs" />
     <Compile Include="Помошники\Matrix.cs" />
     <Compile Include="Помошники\Point.cs" />
+    <Compile Include="Помошники\Stribog.cs" />
     <Compile Include="Помошники\Tables.cs" />
   </ItemGroup>
   <ItemGroup>
