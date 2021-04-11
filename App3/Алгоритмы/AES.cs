@@ -82,7 +82,14 @@ namespace UWP.Алгоритмы
         }
         /*
             Фукнция расшифрования блока.
-            
+            Переписываем входные байты с транспонированием в state.
+            Производим сложение с раундовым ключом,
+            в цикле производим обратные преобразования,
+            1 - сдвиг байт
+            2 - подстановка байт
+            3 - сложение с раундовым ключом
+            4 - перемешивание байт в столбцах
+            в финале производим преобразования без перемешивания байт в столбцах
         */
         private byte[] DecryptBlock(byte[] inp)
         {
@@ -95,8 +102,8 @@ namespace UWP.Алгоритмы
             state = AddRoundKey(state, w, Nr);
             for (int i = Nr - 1; i >= 1; i--)
             {
-                state = InvSubBytes(state);
                 state = InvShiftRows(state);
+                state = InvSubBytes(state);
                 state = AddRoundKey(state, w, i);
                 state = InvMixColumns(state);
             }
@@ -109,7 +116,15 @@ namespace UWP.Алгоритмы
 
             return temp;
         }
-
+        /*
+            Функция шифрования.
+            Получаем ключ и текст, переводим их в массив байт.
+            Дополняем блок в случае необходимости.
+            Транспонируем полученный ключ,
+            Генерируем раундовые ключи,
+            разбиваем текст на блоки.
+            В цикле по количеству блоков шифруем блок.
+        */
         public override string Encrypt(string plainText, Config config)
         {
             string _key = CheckKey(config.Key);
@@ -134,7 +149,12 @@ namespace UWP.Алгоритмы
             encrypt = cipherText;
             return Encoding.Unicode.GetString(cipherText);
         }
-
+        /*
+            Операция удаления нулевых байт.
+            Начиная с конца массива байт зашифрованного текста,
+            удаляем нули, пока не встретим единицу.
+            Как встречаем - удаляем и завершаем процедуру.
+        */
         private byte[] ClearBlocks(byte[] cipherBlocks)
         {
             byte[] result = new byte[1];
@@ -149,7 +169,14 @@ namespace UWP.Алгоритмы
             }
             return result;
         }
-
+        /*
+            Дополнение блока.
+            Умножаем количество блоков на длину блока, чтобы получить итоговое количество байт.
+            В цикле по каждому байту идем до количества байт.
+            Если байты закончились, а итоговое количество байт достигнуто не было,
+            вставляем единицу и после неё заполняем нулями оставшуюься часть блока.
+            В случае, если текст будет полным - добавим новый блок, состоящий из 1 единици и все остальное - нули.
+        */
         private byte[] DopBlock(byte[] text)
         {
             byte te = 0x_80;
@@ -176,7 +203,17 @@ namespace UWP.Алгоритмы
             }
             return result;
         }
-
+        /*
+            Процедура шифрования блока.
+            Фомируем из блока входных байт массив state, транспонируя исходные байты.
+            Складываем state с раундовым ключом,
+            в цикле по числу раундов:
+            1 - замена байт по таблице
+            2 - циклический сдвиг строки влево на 1,2,3 байта
+            3 - перемешивание байтов 
+            4 - сложение с раундовым ключом
+            На последнем шаге применяем вышеперечисленные процедуры без перемешивания байтов.
+        */
         private byte[] EncryptBlock(byte[] inp)
         {
             byte[] temp = new byte[inp.Length];
@@ -202,26 +239,38 @@ namespace UWP.Алгоритмы
 
             return temp;
         }
-
+        /*
+            Процедура замены байтов на байты из таблицы.
+            В цикле по state
+            Получаем байт из таблицы замены под индексом текущего байта state         
+        */
         private byte[,] SubBytes(byte[,] state)
         {
             byte[,] tmp = new byte[4, 4];
             for (int row = 0; row < 4; row++)
                 for (int col = 0; col < Nb; col++)
-                    tmp[row, col] = (byte)(Sbox[(state[row, col] & 0x000000ff)] & 0xff);
+                    tmp[row, col] = Sbox[state[row, col]];
 
             return tmp;
         }
-
+        /*
+            Процедура замены байтов на байты из таблицы.
+            В цикле по state
+            Получаем байт из таблицы замены под индексом текущего байта state         
+        */
         private byte[,] InvSubBytes(byte[,] state)
         {
             for (int row = 0; row < 4; row++)
                 for (int col = 0; col < Nb; col++)
-                    state[row, col] = (byte)(InvSbox[(state[row, col] & 0x000000ff)] & 0xff);
+                    state[row, col] = InvSbox[state[row, col]];
 
             return state;
         }
-
+        /*
+            Процедура сдвига строк.
+            Первая строка неподвижна,
+            Остальные циклически сдвигаются на 1,2,3 байта соответственно влево.
+        */
         private byte[,] ShiftRows(byte[,] state)
         {
 
@@ -236,7 +285,11 @@ namespace UWP.Алгоритмы
 
             return state;
         }
-
+        /*
+            Процедура обратного сдвига строк.
+            Первая строка неподвижна,
+            Остальные циклически сдвигаются на 1,2,3 байта соответственно вправо
+        */
         private byte[,] InvShiftRows(byte[,] state)
         {
             byte[] t = new byte[4];
@@ -249,7 +302,10 @@ namespace UWP.Алгоритмы
             }
             return state;
         }
-
+        /*
+            Обратная процедура перемешивания матрицы.
+            Каждый столбец исходной матрицы принимается за многочлен и умножается на фиксированный многочлен над полем GF(2^8)             
+        */
         private byte[,] InvMixColumns(byte[,] s)
         {
             int[] sp = new int[4];
@@ -266,7 +322,10 @@ namespace UWP.Алгоритмы
 
             return s;
         }
-
+        /*
+            Процедура перемешивания матрицы.
+            Каждый столбец исходной матрицы принимается за многочлен и умножается на фиксированный многочлен над полем GF(2^8)
+        */
         private byte[,] MixColumns(byte[,] s)
         {
             int[] sp = new int[4];
@@ -283,7 +342,9 @@ namespace UWP.Алгоритмы
 
             return s;
         }
-
+        /*
+             Умножение в поле GF(2^8)
+        */
         public byte FFMul(byte a, byte b)
         {
             byte aa = a, bb = b, r = 0, t;
@@ -299,7 +360,14 @@ namespace UWP.Алгоритмы
             }
             return r;
         }
-
+        /*
+            Генерация раундовых ключей.
+            первые 4 слова заполнены ключом шифра,
+            остальные вычисляются по формуле w[i+5] = w[i+4] ^ w[i+1].
+            Раунд вычисляет 4 слова, каждое первое слово каждого раунда
+            использует циклический сдвиг слова влево на один байт,
+            а затем табличная замена полученного слова.
+        */
         private byte[,] GenerateWordKeys(byte[,] keys)
         {
             byte[,] w = new byte[44,4];
@@ -320,7 +388,7 @@ namespace UWP.Алгоритмы
                         temp = SubWord(RotWord(temp));
                         for (int l = 0; l < 4; l++)
                         {
-                            temp[l] = (byte)(temp[l] ^ (Rcon[i / 4][l] & 0xff));
+                            temp[l] = (byte)(temp[l] ^ (Rcon[i / 4][l]));
                             w[i, l] = temp[l];
                         }
 
@@ -338,6 +406,9 @@ namespace UWP.Алгоритмы
 
 
         }
+        /*
+            Циклический сдвиг четырехбайтового слова влево на один байт 
+        */
         private static byte[] RotWord(byte[] input)
         {
             byte[] tmp = new byte[input.Length];
@@ -348,16 +419,21 @@ namespace UWP.Алгоритмы
 
             return tmp;
         }
+        /*
+            замена каждого байта в соответствии с таблицей
+        */
         private static byte[] SubWord(byte[] inp)
         {
             byte[] tmp = new byte[inp.Length];
 
             for (int i = 0; i < tmp.Length; i++)
-                tmp[i] = (byte)(Sbox[inp[i] & 0x000000ff] & 0xff);
+                tmp[i] = (byte)(Sbox[inp[i]]);
 
             return tmp;
         }
-
+        /*
+            Разбить входной текст на блоки 
+        */
         private byte[][] GiveAllBlocks(byte[] text)
         {
             int len = text.Length / BLOCK_SIZE + 1;
@@ -384,7 +460,9 @@ namespace UWP.Алгоритмы
             }
             return res;
         }
-
+        /*
+            Исходный ключ переписываем с транспонированием 
+        */
         private byte[,] GenerateSubKeys(byte[] key)
         {
             byte[,] rez = new byte[Nk, Nk];
@@ -397,7 +475,10 @@ namespace UWP.Алгоритмы
             }
             return rez;
         }
-
+        /*
+            Процедура сложения матрицы с раундовым ключом.
+            Побитово сложить столбец исходной матрицы с 4-байтовым фрагментом ключа
+        */
         private byte[,] AddRoundKey(byte[,] state, byte[,] w, int round)
         {
             byte[,] tmp = new byte[Nb, Nb];

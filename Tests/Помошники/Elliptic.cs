@@ -113,10 +113,10 @@ namespace UWP.Помошники
         public BigInteger Calculate_Q()
         {
             uint pointCount = 0;
-            List<int> squareY = new List<int>();
+            List<BigInteger> squareY = new List<BigInteger>();
             for(int y = 0; y <= 9; y++)
             {
-                squareY.Add((int)Math.Pow(y, 2) % (int)p);
+                squareY.Add(Pow(y,2,p));
             }
             for(int x = 0; x <= 10; x++)
             {
@@ -133,6 +133,18 @@ namespace UWP.Помошники
             uint q = pointCount / cof;
 
             return new BigInteger(q);
+        }
+
+        private BigInteger Pow(BigInteger x, BigInteger p, BigInteger m)
+        {
+            BigInteger r = 1;
+            x %= m;
+            for (int i = 1; i <= p; i++)
+            {
+                r = (r * x) % m;
+            }
+
+            return r;
         }
 
         static List<uint> TrialDivision(uint n)

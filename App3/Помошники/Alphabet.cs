@@ -33,6 +33,30 @@ namespace UWP.Помошники
             return alf;
         }
 
+        public static Dictionary<int, char> GenerateFullFullAlphabet()
+        {
+            var alf = new Dictionary<int, char>();
+            int start = Convert.ToInt32('А');
+            int stop = Convert.ToInt32('Я');
+            int k = 1;
+            int i = start;
+            for (; i < start + 6; i++)
+            {
+                alf[k++] = Convert.ToChar(i);
+            }
+            alf[k++] = Convert.ToChar('Ё');
+            for (; i <= stop; i++)
+            {
+                if(i == 10)
+                {
+                    alf[k++] = Convert.ToChar('Й');
+                    continue;
+                }
+                alf[k++] = Convert.ToChar(i);
+            }
+            return alf;
+        }
+
         public static Dictionary<int, char> GenerateFullAlphabet()
         {
             var alf = new Dictionary<int, char>();

@@ -15,21 +15,34 @@ namespace App3.Помошники
         private byte[] Ttable;
         private ulong[] Atable;
         private byte[][] Ctable;
-        private byte[] iv,N,sigma;
-        private byte[] N_0 ={
-            0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-            0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-            0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-            0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00
-            };
-        public byte[] GetHashMessage(byte[] text)
+        private byte[] N,sigma;
+
+        /*
+            Функция хеширования.
+            Этап 1: присваиваем начальные значения величин iv,N,sigma.
+            Изначально все значения заполнены векторами длины 512, состоящих из 0
+
+            Этап 2:
+            Если длина исходного сообшения больше 512 бит, переходим к шагу 3.
+            Цикл while(len >= 512) срабатывает тогда, когда длина исходного сообщения больше, чем 512 бит.
+            Берем последние 512 бит исходного сообщения, выполняем последовательность вычислений:
+            G,N,двоичное сложение блока 512 бит с sigma.
+            Возвращаемся на этап проверки длины сообщения.
+
+            Этап 3:
+            Записываем в массив байт оставшиеся байты из начала сообщения.
+            Если блок не полный, тогда дописываем 0 до достижения размера в 64 байта.
+            Выполняем преобразование G, Сложение по модулю 2^512,
+            Вычисляем sigma и выполняем преобразование G.
+            В конце для хеширования с размеров блока в 512 бит выполняем преобразование G.
+        */
+        public byte[] GetHashMessage(string text)
         {
             SBox = Tables.StribogSbox;
             Ttable = Tables.StribogT;
             Atable = Tables.StribogA;
             Ctable = Tables.StribogC;
-            byte[] byteText = text;
-            iv = new byte[BLOCK_LENGTH];
+            byte[] byteText = Encoding.Unicode.GetBytes(text);
             N = new byte[BLOCK_LENGTH];
             sigma = new byte[BLOCK_LENGTH];
             byte[] h = new byte[BLOCK_LENGTH];
@@ -61,12 +74,13 @@ namespace App3.Помошники
             byte[] MesLen = BitConverter.GetBytes(message.Length * 8);
             N = Add(N, MesLen.Reverse().ToArray());
             sigma = Add(sigma, paddedMes);
+            byte[] N_0 = new byte[64];
             h = G(N_0, h, N);
             h = G(N_0, h, sigma);
             return h;
         }
         /*
-            Сложение по модулю 512 
+            Сложение по модулю 2^512
         */
         private byte[] Add(byte[] a, byte[] b)
         {
@@ -83,7 +97,9 @@ namespace App3.Помошники
             }
             return temp;
         }
-
+        /*
+            XOR двух 512 битных последовательностей 
+        */
         private byte[] X(byte[] a, byte[] b)
         {
             byte[] x = new byte[BLOCK_LENGTH];
@@ -93,7 +109,9 @@ namespace App3.Помошники
             }
             return x;
         }
-
+        /*
+            Замена входных байтов на байты из таблицы под индексом исходного байта.
+        */
         private byte[] S(byte[] s)
         {
             byte[] r = new byte[BLOCK_LENGTH];
@@ -103,7 +121,11 @@ namespace App3.Помошники
             }
             return r;
         }
-
+        /*
+            Перестановка байт исходного массива в порядке, заданном в таблице перестановок.
+            В результирующий массив записываем байт из исходного массива под индексом байта, находящимся в таблице T с индексом текущей
+            итерации.
+        */
         private byte[] P(byte[] s)
         {
             byte[] r = new byte[BLOCK_LENGTH];
@@ -114,7 +136,11 @@ namespace App3.Помошники
 
             return r;
         }
-
+        /*
+            Умножение вектора 64 байт на матрицу А
+            В цикле копируем по 8 байт во временный массив и переводим их в биты.
+            Умножаем вектор на матрицу, копируем в результирующий массив.
+        */
         private byte[] L(byte[] s)
         {
             byte[] result = new byte[64];
@@ -138,7 +164,10 @@ namespace App3.Помошники
             }
             return result;
         }
-
+        /*
+            Функция сжатия.
+            Произвести преобразование XSPL, E
+        */
         private byte[] G(byte[] N, byte[] h, byte[] m)
         {
             byte[] K = X(h, N);
@@ -150,7 +179,11 @@ namespace App3.Помошники
             byte[] G = X(t, m);
             return G;
         }
-
+        /*
+            Преобразование E.
+            Присвоить state XOR обоих входных массивов.
+            В цикле произвести преобразование SPL, KeySchedule и XOR от state и k
+        */
         private byte[] E(byte[] k, byte[] m)
         {
             byte[] state = X(k, m);
@@ -164,7 +197,11 @@ namespace App3.Помошники
             }
             return state;
         }
-
+        /*
+            Функция формирования временного ключа.
+            k присвоить значение операции XOR от входного массива k и 64 байтного вектора из таблицы C.
+            Далее провести преобразование SPL
+        */
         private byte[] KeyS(byte[] k, int i)
         {
             k = X(k, Ctable[i]);

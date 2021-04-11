@@ -110,17 +110,17 @@ namespace UWP.Помошники
             return result;
         }
 
-        public BigInteger Calculate_Q()
+        public BigInteger Calculate_Q(BigInteger p)
         {
             uint pointCount = 0;
-            List<int> squareY = new List<int>();
-            for(int y = 0; y <= 9; y++)
+            List<BigInteger> squareY = new List<BigInteger>();
+            for(BigInteger y = 0; y <= p; y++)
             {
-                squareY.Add((int)Math.Pow(y, 2) % (int)p);
+                squareY.Add(Pow(y,2,p));
             }
-            for(int x = 0; x <= 10; x++)
+            for(BigInteger x = 0; x <= 10; x++)
             {
-                int y = ((int)Math.Pow(x, 3) + (int)a * x + (int)b) % (int)p;
+                BigInteger y = (BigInteger.Pow(x, 3) + a * x + b) % p;
                 if (squareY.IndexOf(y) != -1)
                     pointCount += 2;
             }
@@ -133,6 +133,18 @@ namespace UWP.Помошники
             uint q = pointCount / cof;
 
             return new BigInteger(q);
+        }
+
+        private BigInteger Pow(BigInteger x, BigInteger p, BigInteger m)
+        {
+            BigInteger r = 1;
+            x %= m;
+            for (int i = 1; i <= p; i++)
+            {
+                r = (r * x) % m;
+            }
+
+            return r;
         }
 
         static List<uint> TrialDivision(uint n)

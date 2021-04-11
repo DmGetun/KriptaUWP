@@ -76,6 +76,8 @@ namespace App3
                 if (algoritm.IsReplaceText)
                     plain = ReplaceTextAfterDecrypt(plain);
                 plainTextArea.Text = plain;
+                string keyView = algoritm.KeyView();
+                ErrorArea.Text = keyView;
             }
             catch (Error error)
             {
@@ -102,8 +104,6 @@ namespace App3
                 config.Key = KeyArea.Text;
                 ViewText.Text = text;
                 cypher = algoritm.Encrypt(text, config);
-                string keyView = algoritm.KeyView();
-                ErrorArea.Text = keyView;
                 cypherTextArea.Text = cypher;
             }
             catch (Error error)

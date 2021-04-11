@@ -1,4 +1,5 @@
-﻿using System;
+﻿using App3.Помошники;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -35,11 +36,21 @@ namespace UWP.Алгоритмы
             q = keys[1];
             //a = Calculate_a(p, q);
             BigInteger y = Pow(a, x, p);
-            BigInteger h = GetHashMessage(text,q);
+            if (y < 0) y += p;
+
+            Stribog stribog = new Stribog();
+            BigInteger h = new BigInteger(stribog.GetHashMessage(text));
+            if (h < 0) h = -h;
+            if (h == 0) h = 1;
+
             BigInteger v = Pow(h, q - 2, q);
+            if (v < 0) v += q;
             BigInteger z1 = (s * v) % q;
+            if (z1 < 0) z1 += q;
+
             BigInteger z2 = ((q - r) * v) % q;
-            BigInteger u = ((BigInteger.Pow(a, (int)z1) * BigInteger.Pow(y, (int)z2)) % p) % q;
+            if (z2 < 0) z2 += q;
+            BigInteger u = Pow(a,z1,p) * Pow(y,z2,p) % q;
             if (u == r)
                 return "Подпись верна";
             return "Подпись не верна";
@@ -67,15 +78,50 @@ namespace UWP.Алгоритмы
             p = keys[0];
             q = keys[1];
             x = keys[2];
-            //a = Calculate_a(p,q);
-            a = 8;
-            //BigInteger k = Calculate_k(q);
-            BigInteger k = 2;
-            BigInteger h = GetHashMessage(plainText, q);
-            BigInteger r = Pow(a, k, p) % q;
-            BigInteger s = (x * r + k * h) % q;
+            CheckNumbers(p, q, x);
 
+            a = Calculate_a(p,q);
+
+            Stribog stribog = new Stribog();
+            BigInteger h = new BigInteger(stribog.GetHashMessage(plainText));
+            if (h < 0) h = -h;
+            if (h == 0) h = 1;
+            BigInteger r = 0;
+            BigInteger s = 0;
+            do
+            {
+                BigInteger k = Calculate_k(q);
+                r = Pow(a, k, p) % q;
+                if (r < 0) r += q;
+                s = (x * r + k * h) % q;
+                if (s < 0) s += q;
+            } while (r == 0 || s == 0);
             return $"{plainText},({r},{s})";
+        }
+
+        private void CheckNumbers(BigInteger p, BigInteger q, BigInteger x)
+        {
+            if (!IsTheNumberSimple(p))
+                throw new Error("Число p не простое");
+            if (!IsTheNumberSimple(q))
+                throw new Error("Число q не простое");
+            if(x >= q)
+                throw new Error("Число x должно быть меньше q");
+        }
+
+        private bool IsTheNumberSimple(BigInteger n)
+        {
+            if (n < 2)
+                return false;
+
+            if (n == 2)
+                return true;
+
+            for (BigInteger i = 2; i < n / 2; i++)
+                if (n % i == 0)
+                    return false;
+
+            return true;
         }
 
         private BigInteger Calculate_k(BigInteger q)

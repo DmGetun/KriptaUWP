@@ -11,21 +11,15 @@ namespace UWP.Алгоритмы
     class GOST34102012 : Algorithm
     {
         private BigInteger p,q;
-
         public override string Name => "ГОСТ Р 34.10-2012";
-
-        public override string DefaultKey => "a=2\rb=7\rp=11\rXa=6\rG=(10,9)";
-
+        public override string DefaultKey => "a=5\rb=7\rp=47\rXa=6\rG=(3,7)";
         public override bool IsReplaceText => true;
-
         public int Xa { get; private set; }
         public Point Yu { get; private set; }
-
         public override string CheckKey(string key)
         {
             throw new NotImplementedException();
         }
-
         public override string Decrypt(string cipherText, Config config)
         {
             string text = cipherText.Split(',')[0];
@@ -41,21 +35,29 @@ namespace UWP.Алгоритмы
             BigInteger y_ = new BigInteger(keys[5]);
             Elliptic elliptic = new Elliptic(a, b, p);
             Point G = elliptic.CheckPoint(new Point(x_, y_));
-            BigInteger q = elliptic.Calculate_Q();
+            BigInteger q = elliptic.Calculate_Q(p);
 
             Yu = elliptic.GetValue(Xa, G);
-            BigInteger hash = GetHashMessage(text,p);
             if (!(0 < r || s < q))
                 return "Подпись не верна.";
 
+            BigInteger hash = GetHashMessage(text,p);
+            BigInteger e = hash % q;
+            if (e == 0) e = 1;
             BigInteger f = F(q) - 1;
+            
 
-            BigInteger u1 = s * Pow(hash, f, q) % q;
+            BigInteger u1 = (s * Pow(e, f, q)) % q;
             if (u1 < 0) u1 += q;
-            BigInteger u2 = -r * Pow(hash, f, q) % q;
+            BigInteger u2 = q + ((-(r * Pow(e, f, q))) % q);
             if (u2 < 0) u2 += q;
 
-            Point P = elliptic.SumPoint(elliptic.GetValue((int)u1, G), elliptic.GetValue((int)u2, Yu));
+            Point P1 = elliptic.GetValue((int)u1, G);
+            Point P2 = elliptic.GetValue((int)u2, Yu);
+/*            if (P1.X == P2.X && P1.Y == P2.Y)
+                P1 = elliptic.GetValue(2, P1);*/
+
+            Point P = elliptic.SumPoint(P1,P2);
             BigInteger res = P.X % q;
             if (res < 0) res += q;
             if (res == r)
@@ -74,10 +76,11 @@ namespace UWP.Алгоритмы
             Xa = keys[3];
             Elliptic elliptic = new Elliptic(a, b, p);
             Point G = elliptic.CheckPoint(new Point(keys[4], keys[5]));
-            BigInteger q = elliptic.Calculate_Q();
+            BigInteger q = elliptic.Calculate_Q(p);
 
             BigInteger hash = GetHashMessage(plainText, p);
-
+            BigInteger e = hash % q;
+            if (e == 0) e = 1;
             int k = 3;
             Point P = new Point();
             BigInteger r = 0;
@@ -88,10 +91,10 @@ namespace UWP.Алгоритмы
                 P = elliptic.GetValue(k, G);
                 r = P.X % q;
                 if (r < 0) r += q;
-                s = (k * hash + r * Xa) % q;
+                s = ((r * Xa) + (k * e)) % q;
                 if (s < 0) s += q;
             }
-            while (r == 0 || s == 0);
+            while (r == 0 || s == 0 || r.Equals(s));
 
             return $"{plainText},({r},{s})";
         }
