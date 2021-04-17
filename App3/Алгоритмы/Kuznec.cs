@@ -10,16 +10,16 @@ namespace UWP.Алгоритмы
 {
     class Kuznec : Algorithm
     {
-        private byte[] pi, reverse_pi;
+        private static byte[] pi, reverse_pi;
 
-        private const int SUB_LENGTH = 16;
+        private const int SUB_Length = 16;
 
         private const int BLOCK_SIZE = 16;
 
-        private const int KEY_LENGTH = 32;
+        private const int KEY_Length = 32;
 
         private byte[][] _subKeys;
-
+        private byte[] resultArray;
         private readonly byte[] _lFactors = {
             0x94, 0x20, 0x85, 0x10, 0xC2, 0xC0, 0x01, 0xFB,
             0x01, 0xC0, 0xC2, 0x10, 0x85, 0x20, 0x94, 0x01
@@ -31,238 +31,352 @@ namespace UWP.Алгоритмы
 
         public override bool IsReplaceText => false;
 
+        // массив для хранения констант
+        static byte[][] iter_C = new byte[32][]; // 16
+        // массив для хранения ключей
+        static byte[][] iter_key = new byte[10][]; // 64
+
         public override string CheckKey(string key)
         {
             throw new NotImplementedException();
         }
 
+        private static byte[] l_vec = {
+             1, (byte) 148, 32, (byte) 133, 16, (byte) 194, (byte) 192, 1,
+             (byte) 251, 1, (byte) 192, (byte) 194, 16, (byte) 133, 32, (byte) 148
+        };
+
+        public string Decrypt(byte[] cipherText,byte[] key)
+        {
+            string text = Encoding.Unicode.GetString(cipherText);
+            string _key = Encoding.Unicode.GetString(key);
+            Config config = new Config { Key = _key };
+            string res = Decrypt(text, config);
+            byte[] final = Encoding.Unicode.GetBytes(res);
+            return BitConverter.ToString(final);
+        }
+
+        public string Encrypt(byte[] plainText, byte[] key)
+        {
+            string text = Encoding.Unicode.GetString(plainText);
+            string _key = Encoding.Unicode.GetString(key);
+            Config config = new Config { Key = _key };
+            string res = Encrypt(text, config);
+            byte[] final = Encoding.Unicode.GetBytes(res);
+            return BitConverter.ToString(final);
+        }
+
         public override string Decrypt(string cipherText, Config config)
         {
-            throw new NotImplementedException();
+            pi = Tables._pi;
+            reverse_pi = Tables._reversePi;
+            string keyString = config.Key;
+            byte[] keys = Encoding.Unicode.GetBytes(keyString);
+            byte[] text = Encoding.Unicode.GetBytes(cipherText);
+            text = resultArray;
+            byte[] block = new byte[BLOCK_SIZE];
+            byte[] result = new byte[text.Length];
+            GOST_Kuz_Expand_Key(keys);
+
+            Parallel.For(0, text.Length / BLOCK_SIZE, i =>
+            {
+                Array.Copy(text, i * BLOCK_SIZE, block, 0, BLOCK_SIZE);
+                Array.Copy(GOST_Kuz_Decript(block), 0, result, i * BLOCK_SIZE, BLOCK_SIZE);
+            });
+            result = ClearBlocks(result);
+            return Encoding.Unicode.GetString(result);
+        }
+
+        public string Decrypt(byte[] cipherText, byte[] key)
+        {
+            string text = Encoding.Unicode.GetString(cipherText);
+            string _key = Encoding.Unicode.GetString(key);
+            Config config = new Config { Key = _key };
+            return Decrypt(text, config);
         }
 
         public override string Encrypt(string plainText, Config config)
         {
             pi = Tables._pi;
             reverse_pi = Tables._reversePi;
-            string keyString = "8899aabbccddeeff0011223344556677fedcba98765432100123456789abcdef";
-            string[] text = SplitText(plainText);
-            string[] outputBlocks = new string[text.Length];
-            string result;
-            byte[] keysArray = Encoding.Unicode.GetBytes(keyString);
-            SetKey(keysArray);
-/*            for (int i = 0; i < inputText.Length; i++)
+            string keyString = config.Key;
+            byte[] keys = Encoding.Unicode.GetBytes(keyString);
+            byte[] text = Encoding.Unicode.GetBytes(plainText);
+            text = DopBlock(text);
+            byte[] block = new byte[BLOCK_SIZE];
+            byte[] result = new byte[text.Length];
+            GOST_Kuz_Expand_Key(keys);
+
+            Parallel.For(0, text.Length / BLOCK_SIZE, i =>
             {
-                outputBlocks[i] = ByteToHexConverter(Encrypt(HexToByte.HexToByteConvert(inputText[i])));
-            }*/
-            return "";
+                Array.Copy(text, i * BLOCK_SIZE, block, 0, BLOCK_SIZE);
+                Array.Copy(GOST_Kuz_Encript(block), 0, result, i * BLOCK_SIZE, BLOCK_SIZE);
+            });
+            resultArray = result;
+            return Encoding.Unicode.GetString(result);
         }
 
-        private string[] SplitText(string inputText)
+        // функция X
+        static private byte[] GOST_Kuz_X(byte[] a, byte[] b)
         {
-            //Chuck size is 32 for 128-bit text
-            int chunkSize = 32;
-            int inputStringSize = inputText.Length;
-            double doubleVarChunkCount = (double)inputStringSize / (double)chunkSize;
-            int chunkCount = (int)Math.Ceiling(doubleVarChunkCount);
-            if (inputStringSize < chunkCount * chunkSize)
+            byte[] c = new byte[BLOCK_SIZE];
+            for (int i = 0; i < BLOCK_SIZE; i++)
+                c[i] = (byte)(a[i] ^ b[i]);
+            return c;
+        }
+
+        // Функция S
+        static private byte[] GOST_Kuz_S(byte[] in_data)
+        {
+            byte[] out_data = new byte[in_data.Length];
+            for (int i = 0; i < BLOCK_SIZE; i++)
             {
-                string zeroChar = "0";
-                for (int j = inputStringSize; j < chunkCount * chunkSize; j++)
+                int data = in_data[i];
+                if (data < 0)
                 {
-                    inputText += zeroChar;
+                    data = data + 256;
                 }
+                out_data[i] = pi[data];
             }
-
-            string[] block = new string[chunkCount];
-            for (int i = 0; i < chunkCount; i++)
-            {
-                block[i] = inputText.Substring(i * chunkSize, chunkSize);
-                //Console.WriteLine(block[i]);
-            }
-
-
-            return block;
+            return out_data;
         }
 
-        public void SetKey(byte[] key)
+        // умножение в поле Галуа
+        static private byte GOST_Kuz_GF_mul(byte a, byte b)
         {
-
-            /*
-             * Инициализация массива итерационных ключей
-             */
-
-            _subKeys = new byte[10][];
-            for (int i = 0; i < 10; i++)
+            byte c = 0;
+            byte hi_bit;
+            int i;
+            for (i = 0; i < 8; i++)
             {
-                _subKeys[i] = new byte[SUB_LENGTH];
-            }
-
-            byte[] x = new byte[SUB_LENGTH];
-            byte[] y = new byte[SUB_LENGTH];
-
-            byte[] c = new byte[SUB_LENGTH];
-
-            /*
-             * SubKey[1] = k[255..128]
-             * SubKey[2] = k[127..0]
-             */
-
-            for (int i = 0; i < SUB_LENGTH; i++)
-            {
-                _subKeys[0][i] = x[i] = key[i];
-                _subKeys[1][i] = y[i] = key[i + 16];
-
-            }
-
-            for (int k = 1; k < 5; k++)
-            {
-
-                for (int j = 1; j <= 8; j++)
-                {
-                    C(ref c, 8 * (k - 1) + j);
-                    F(ref c, ref x, ref y);
-                }
-
-                Array.Copy(x, _subKeys[2 * k], SUB_LENGTH);
-                Array.Copy(y, _subKeys[2 * k + 1], SUB_LENGTH);
-
-            }
-
-            Console.WriteLine("\nРазвертывание ключа:");
-            for (int j = 0; j < _subKeys.Length; j++)
-            {
-                Console.WriteLine("K" + (j + 1) + ": " + ByteToHexConverter(_subKeys[j]).ToUpper());
-            }
-        }
-
-        public static string ByteToHexConverter(byte[] bytes)
-        {
-            char[] c = new char[bytes.Length * 2];
-
-            byte b;
-
-            for (int bx = 0, cx = 0; bx < bytes.Length; ++bx, ++cx)
-            {
-                b = ((byte)(bytes[bx] >> 4));
-                c[cx] = (char)(b > 9 ? b + 0x37 + 0x20 : b + 0x30);
-
-                b = ((byte)(bytes[bx] & 0x0F));
-                c[++cx] = (char)(b > 9 ? b + 0x37 + 0x20 : b + 0x30);
-            }
-
-            return new string(c);
-        }
-
-        private void F(ref byte[] k, ref byte[] a1, ref byte[] a0)
-        {
-            byte[] temp = new byte[SUB_LENGTH];
-
-            LSX(ref temp, ref k, ref a1);
-            X(ref temp, ref a0);
-
-            Array.Copy(a1, a0, SUB_LENGTH);
-            Array.Copy(temp, a1, SUB_LENGTH);
-
-        }
-
-        private void LSX(ref byte[] result, ref byte[] k, ref byte[] a)
-        {
-            Array.Copy(k, result, BLOCK_SIZE);
-            X(ref result, ref a);
-            S(ref result);
-            L(ref result);
-        }
-
-        private void X(ref byte[] result, ref byte[] data)
-        {
-            for (int i = 0; i < result.Length; i++)
-            {
-                result[i] ^= data[i];
-            }
-        }
-
-        private void S(ref byte[] data)
-        {
-            for(int i = 0; i < data.Length; i++)
-            {
-                data[i] = pi[data[i]];
-            }
-        }
-
-        private void ReverseS(ref byte[] data)
-        {
-            for(int i = 0; i < data.Length; i++)
-            {
-                data[i] = reverse_pi[data[i]];
-            }
-        }
-
-        private byte GF_mul(byte a, byte b)
-        {
-            byte p = 0;
-            byte counter;
-            byte hi_bit_set;
-            for (counter = 0; counter < 8; counter++)
-            {
-                if ((b & 1) != 0)
-                    p ^= a;
-                hi_bit_set = (byte)(a & 0x80);
+                if ((b & 1) == 1)
+                    c ^= a;
+                hi_bit = (byte)(a & 0x80);
                 a <<= 1;
-                if (hi_bit_set != 0)
-                    a ^= 0xC3; /* x^8 + x^7 + x^6 + x + 1 */
+                if (hi_bit < 0)
+                    a ^= 0xc3; //полином  x^8+x^7+x^6+x+1
                 b >>= 1;
             }
-            return p;
+            return c;
         }
 
-        private void R(ref byte[] data)
+        // функция R сдвигает данные и реализует уравнение, представленное для расчета L-функции
+        static private byte[] GOST_Kuz_R(byte[] state)
         {
-            byte z = data[15];
-            for(int i = 14;i >= 0; i--)
+            byte a_15 = 0;
+            byte[] temp = new byte[16];
+            for (int i = 15; i >= 0; i--)
             {
-                z ^= GF_mul(data[i], _lFactors[i]);
+                if (i == 0)
+                    temp[15] = state[i];
+                else
+                    temp[i - 1] = state[i];
+                a_15 ^= GOST_Kuz_GF_mul(state[i], l_vec[i]);
             }
-
-            for(int i = 15; i > 0; i--)
-            {
-                data[i] = data[i - 1];
-            }
-            data[0] = z;
+            temp[15] = a_15;
+            return temp;
         }
 
-        private void reverseR(ref byte[] data)
+        static private byte[] GOST_Kuz_L(byte[] in_data)
         {
-            byte z = data[0];
-
-            for (int i = 0; i < 15; i++)
-            {
-                data[i] = data[i + 1];
-                z ^= GF_mul(data[i], _lFactors[i]);
-            }
-            data[15] = z;
-        }
-
-        private void L(ref byte[] data)
-        {
+            byte[] out_data = new byte[in_data.Length];
+            byte[] temp = in_data;
             for (int i = 0; i < 16; i++)
             {
-                R(ref data);
+
+                temp = GOST_Kuz_R(temp);
             }
-        }
-        private void reverseL(ref byte[] data)
-        {
-            for (int i = 0; i < 16; i++)
-            {
-                reverseR(ref data);
-            }
+            out_data = temp;
+            return out_data;
         }
 
-        private void C(ref byte[] c, int i)
+        // функция S^(-1)
+        static private byte[] GOST_Kuz_reverse_S(byte[] in_data)
         {
-            Array.Clear(c, 0, SUB_LENGTH);
-            c[15] = (byte)i;
-            L(ref c);
+            byte[] out_data = new byte[in_data.Length];
+            for (int i = 0; i < BLOCK_SIZE; i++)
+            {
+                int data = in_data[i];
+                if (data < 0)
+                {
+                    data = data + 256;
+                }
+                out_data[i] = reverse_pi[data];
+            }
+            return out_data;
+        }
+        static private byte[] GOST_Kuz_reverse_R(byte[] state)
+        {
+            byte a_0;
+            a_0 = state[15];
+            byte[] temp = new byte[16];
+            for (int i = 1; i < 16; i++)
+            {
+                temp[i] = state[i - 1];
+                a_0 ^= GOST_Kuz_GF_mul(temp[i], l_vec[i]);
+            }
+            temp[0] = a_0;
+            return temp;
+        }
+        static private byte[] GOST_Kuz_reverse_L(byte[] in_data)
+        {
+            byte[] out_data = new byte[in_data.Length];
+            byte[] temp;
+            temp = in_data;
+            for (int i = 0; i < 16; i++)
+                temp = GOST_Kuz_reverse_R(temp);
+            out_data = temp;
+            return out_data;
+        }
+        // функция расчета констант
+        static private void GOST_Kuz_Get_C()
+        {
+            byte[][] iter_num = new byte[32][];
+            for (int i = 0; i < 32; i++)
+            {
+                iter_num[i] = new byte[16];
+                iter_num[i][0] = (byte)(i + 1);
+            }
+            for (int i = 0; i < 32; i++)
+            {
+                iter_C[i] = GOST_Kuz_L(iter_num[i]);
+            }
+        }
+        // функция, выполняющая преобразования ячейки Фейстеля
+        static private byte[][] GOST_Kuz_F(byte[] in_key_1, byte[] in_key_2, byte[] iter_const)
+        {
+            byte[] temp;
+            byte[] out_key_2 = in_key_1;
+            temp = GOST_Kuz_X(in_key_1, iter_const);
+            temp = GOST_Kuz_S(temp);
+            temp = GOST_Kuz_L(temp);
+            byte[] out_key_1 = GOST_Kuz_X(temp, in_key_2);
+            byte[][] key = new byte[2][];
+            key[0] = out_key_1;
+            key[1] = out_key_2;
+            return key;
+        }
+        // функция расчета раундовых ключей
+        public void GOST_Kuz_Expand_Key(byte[] keys)
+        {
+            int len = keys.Length / 2;
+            byte[] key_1 = new byte[len], key_2 = new byte[len];
+            Array.Copy(keys, 0, key_1, 0, len);
+            Array.Copy(keys, len, key_2, 0, len);
+
+            for (int i = 0; i < iter_C.Length; i++)
+                iter_C[i] = new byte[16];
+
+            for (int i = 0; i < iter_key.Length; i++)
+                iter_key[i] = new byte[16];
+
+
+            byte[][] iter12 = new byte[2][];
+            byte[][] iter34 = new byte[2][];
+            GOST_Kuz_Get_C();
+            iter_key[0] = key_1;
+            iter_key[1] = key_2;
+            iter12[0] = key_1;
+            iter12[1] = key_2;
+            for (int i = 0; i < 4; i++)
+            {
+                iter34 = GOST_Kuz_F(iter12[0], iter12[1], iter_C[0 + 8 * i]);
+                iter12 = GOST_Kuz_F(iter34[0], iter34[1], iter_C[1 + 8 * i]);
+                iter34 = GOST_Kuz_F(iter12[0], iter12[1], iter_C[2 + 8 * i]);
+                iter12 = GOST_Kuz_F(iter34[0], iter34[1], iter_C[3 + 8 * i]);
+                iter34 = GOST_Kuz_F(iter12[0], iter12[1], iter_C[4 + 8 * i]);
+                iter12 = GOST_Kuz_F(iter34[0], iter34[1], iter_C[5 + 8 * i]);
+                iter34 = GOST_Kuz_F(iter12[0], iter12[1], iter_C[6 + 8 * i]);
+                iter12 = GOST_Kuz_F(iter34[0], iter34[1], iter_C[7 + 8 * i]);
+
+                iter_key[2 * i + 2] = iter12[0];
+                iter_key[2 * i + 3] = iter12[1];
+            }
+        }
+        // функция шифрования блока
+        public byte[] GOST_Kuz_Encript(byte[] blk)
+        {
+            byte[] out_blk = new byte[BLOCK_SIZE];
+            out_blk = blk;
+            for (int i = 0; i < 9; i++)
+            {
+                out_blk = GOST_Kuz_X(iter_key[i], out_blk);
+                out_blk = GOST_Kuz_S(out_blk);
+                out_blk = GOST_Kuz_L(out_blk);
+            }
+            out_blk = GOST_Kuz_X(out_blk, iter_key[9]);
+            return out_blk;
+        }
+        //функция расшифрования блока
+        public byte[] GOST_Kuz_Decript(byte[] blk)
+        {
+            byte[] out_blk = new byte[BLOCK_SIZE];
+            out_blk = blk;
+
+            out_blk = GOST_Kuz_X(out_blk, iter_key[9]);
+            for (int i = 8; i >= 0; i--)
+            {
+                out_blk = GOST_Kuz_reverse_L(out_blk);
+                out_blk = GOST_Kuz_reverse_S(out_blk);
+                out_blk = GOST_Kuz_X(iter_key[i], out_blk);
+            }
+            return out_blk;
+        }
+
+
+        /*
+        Операция удаления нулевых байт.
+        Начиная с конца массива байт зашифрованного текста,
+        удаляем нули, пока не встретим единицу.
+        Как встречаем - удаляем и завершаем процедуру.
+        */
+        private byte[] ClearBlocks(byte[] cipherBlocks)
+        {
+            byte[] result = new byte[1];
+            for (int i = cipherBlocks.Length - 1; i > 0; i--)
+            {
+                if (cipherBlocks[i] == 128)
+                {
+                    result = new byte[i];
+                    Array.Copy(cipherBlocks, 0, result, 0, result.Length);
+                    break;
+                }
+            }
+            return result;
+        }
+        /*
+            Дополнение блока.
+            Умножаем количество блоков на длину блока, чтобы получить итоговое количество байт.
+            В цикле по каждому байту идем до количества байт.
+            Если байты закончились, а итоговое количество байт достигнуто не было,
+            вставляем единицу и после неё заполняем нулями оставшуюься часть блока.
+            В случае, если текст будет полным - добавим новый блок, состоящий из 1 единици и все остальное - нули.
+        */
+        private byte[] DopBlock(byte[] text)
+        {
+            byte te = 0x_80;
+            int len = text.Length;
+            int countBlock = len / BLOCK_SIZE;
+            if (len % BLOCK_SIZE != 0)
+                countBlock++;
+            if (len % BLOCK_SIZE == 0)
+                countBlock++;
+            byte[] result = new byte[countBlock * BLOCK_SIZE];
+            int i = 0;
+            for (; i < countBlock * BLOCK_SIZE; i++)
+            {
+                if (i == len)
+                {
+                    result[i++] = 0x_80;
+                    break;
+                }
+                result[i] = text[i];
+            }
+            for (; i < countBlock * BLOCK_SIZE; i++)
+            {
+                result[i] = 0x_00;
+            }
+            return result;
         }
 
         public override string GenerateKey()
@@ -274,5 +388,7 @@ namespace UWP.Алгоритмы
         {
             return "";
         }
+
     }
+
 }

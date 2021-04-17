@@ -24,7 +24,14 @@ namespace UWP.Алгоритмы
         {
             throw new NotImplementedException();
         }
-
+        /*
+            Получаем сообщение и r,s
+            Проверяем коэффициенты a,b и точку G
+            Вычисляем хеш сообщения,
+            Вычисляем z1 и z2,
+            на их основе вычисляем u.
+            Если u = r, то подпись верна.
+        */
         public override string Decrypt(string cipherText, Config config)
         {
             string text = cipherText.Split(',')[0];
@@ -55,7 +62,9 @@ namespace UWP.Алгоритмы
                 return "Подпись верна";
             return "Подпись не верна";
         }
-
+        /*
+            разбить текст от отправителя на сообщение и r,s 
+        */
         private BigInteger[] ParseText(string cipherText)
         {
             cipherText = cipherText.Substring(cipherText.IndexOf(','));
@@ -71,7 +80,14 @@ namespace UWP.Алгоритмы
             }
             return numbers;
         }
-
+        /*
+            Вычисляем a,
+            находим хеш сообщения.
+            Генерируем число k,
+            на его основе вычисляем r и s,
+            Если r или s = 0, то возвращаемся к генерации k.
+            Отправляем сообщение и r,s получателю
+        */
         public override string Encrypt(string plainText, Config config)
         {
             BigInteger[] keys = ParseKey(config.Key);
@@ -98,7 +114,9 @@ namespace UWP.Алгоритмы
             } while (r == 0 || s == 0);
             return $"{plainText},({r},{s})";
         }
-
+        /*
+            Проверка чисел 
+        */
         private void CheckNumbers(BigInteger p, BigInteger q, BigInteger x)
         {
             if (!IsTheNumberSimple(p))
@@ -108,7 +126,9 @@ namespace UWP.Алгоритмы
             if(x >= q)
                 throw new Error("Число x должно быть меньше q");
         }
-
+        /*
+            Проверка на простоту числа 
+        */
         private bool IsTheNumberSimple(BigInteger n)
         {
             if (n < 2)
@@ -123,12 +143,16 @@ namespace UWP.Алгоритмы
 
             return true;
         }
-
+        /*
+            Генерируем k 
+        */
         private BigInteger Calculate_k(BigInteger q)
         {
             return new Random().Next(1, (int)q);
         }
-
+        /*
+            Вычисляем a 
+        */
         private BigInteger Calculate_a(BigInteger p, BigInteger q)
         {
             Random rand = new Random();
@@ -142,7 +166,9 @@ namespace UWP.Алгоритмы
 
             return f;
         }
-
+        /*
+            Возведение в степень по модулю m 
+        */
         private BigInteger Pow(BigInteger x, BigInteger p, BigInteger m)
         {
             BigInteger r = 1;
@@ -154,7 +180,9 @@ namespace UWP.Алгоритмы
 
             return r;
         }
-
+        /*
+            Разбить ключ на коэффициенты 
+        */
         private BigInteger[] ParseKey(string key)
         {
             string[] keys = key.Split('\r');
@@ -168,20 +196,7 @@ namespace UWP.Алгоритмы
             }
             return result;
         }
-
-        private BigInteger GetHashMessage(string plainText, BigInteger p)
-        {
-            var alf = Alphabet.GenerateAlphabet();
-            int h = 0;
-            foreach (char s in plainText)
-            {
-                int index = Alphabet.GetSymbol(alf, s);
-                h = (int)((Math.Pow((h + index), 2)) % (int)p);
-            }
-
-            return h == 0 ? h + 1 : h;
-        }
-
+        
         public override string GenerateKey()
         {
             throw new NotImplementedException();

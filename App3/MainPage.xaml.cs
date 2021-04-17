@@ -114,7 +114,7 @@ namespace App3
 
         private string ReplaceTextBeforeEncrypt(string text)
         {
-            text = text.Replace(" ", "ПРБЛ").Replace(",", "ЗПТ").Replace(".", "ТЧК");
+            text = text.Replace(" ", "ПРБЛ").Replace(",", "ЗПТ").Replace(".", "ТЧК").Replace("-","ТИРЕ");
             if (algoritm.Name == "Шифр Плейфера")
             {
                 text = text.Replace('Ъ', 'Ь').Replace('Й', 'И').Replace('Ё', 'Е');

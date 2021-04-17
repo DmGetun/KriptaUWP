@@ -42,7 +42,7 @@ namespace UWP.Алгоритмы
                 throw new Error("Неверный формат сообщения для получателя");
 
             BigInteger f = F(N);
-            BigInteger hash = GetHashMessage(message, f);
+            BigInteger hash = GetHashMessage(message, N);
 
 
             BigInteger m = Pow(S, E, N);
@@ -80,6 +80,8 @@ namespace UWP.Алгоритмы
             BigInteger[] keys = ParseKey(config.Key);
             BigInteger p = keys[0];
             BigInteger q = keys[1];
+            if (!IsTheNumberSimple(p)) throw new Error("Число p не простое");
+            if (!IsTheNumberSimple(q)) throw new Error("Число q не простое");
 
             N = p * q;
 
@@ -88,11 +90,25 @@ namespace UWP.Алгоритмы
             E = GetMutually(f);
 
             D = GetD(N, E, f);
-            BigInteger hash = GetHashMessage(plainText,f);
+            BigInteger hash = GetHashMessage(plainText,N);
 
             BigInteger S = Pow(hash, D, N);
 
             return string.Format("Получателю отправляется:\r{0},{1}", plainText, S);
+        }
+        private bool IsTheNumberSimple(BigInteger n)
+        {
+            if (n < 2)
+                return false;
+
+            if (n == 2)
+                return true;
+
+            for (BigInteger i = 2; i < n; i++)
+                if (n % i == 0)
+                    return false;
+
+            return true;
         }
         /*
             Функция возведения числа в степень по модулю 

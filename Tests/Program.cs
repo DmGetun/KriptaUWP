@@ -13,7 +13,10 @@ namespace Tests
     {
         static void Main(string[] args)
         {
-
+            string a = "AA";
+            byte b = 0x_EA;
+            Console.WriteLine(Convert.ToByte(Convert.ToInt16(a)));
+            Console.WriteLine(b);
         }
     }
 }

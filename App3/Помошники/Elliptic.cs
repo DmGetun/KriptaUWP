@@ -83,6 +83,9 @@ namespace UWP.Помошники
             BigInteger x2 = point2.X;
             BigInteger y2 = point2.Y;
 
+            if (x1 == x2 && y1 == y2)
+                return DoublePoint(point1);
+
             int f = (int)F(p) - 1;
 
             BigInteger ap = (y2 - y1) * BigInteger.Pow(x2 - x1, f) % p;
@@ -114,15 +117,18 @@ namespace UWP.Помошники
         {
             uint pointCount = 0;
             List<BigInteger> squareY = new List<BigInteger>();
-            for(BigInteger y = 0; y <= p; y++)
+            for(BigInteger y = 0; y < p; y++)
             {
                 squareY.Add(Pow(y,2,p));
             }
-            for(BigInteger x = 0; x <= 10; x++)
+            for(BigInteger x = 0; x < p; x++)
             {
                 BigInteger y = (BigInteger.Pow(x, 3) + a * x + b) % p;
                 if (squareY.IndexOf(y) != -1)
-                    pointCount += 2;
+                    if (y == 0)
+                        pointCount += 1;
+                    else
+                        pointCount += 2;
             }
             pointCount += 1;
 

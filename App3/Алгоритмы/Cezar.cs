@@ -19,8 +19,7 @@ namespace UWP.Алгоритмы
         {
             StringBuilder str = new StringBuilder();
 
-            string error = CheckKey(config.Key);
-            if (error != null) return error; 
+            CheckKey(config.Key);
 
             int step = int.Parse(config.Key);
             var alf = Alphabet.GenerateAlphabet();
@@ -62,14 +61,12 @@ namespace UWP.Алгоритмы
         {
             StringBuilder str = new StringBuilder();
 
-            string error = CheckKey(config.Key);
-            if (error != null) return error;
+            CheckKey(config.Key);
             int step = int.Parse(config.Key);
             var alf = Alphabet.GenerateAlphabet();
             string text = Alphabet.CheckText(plainText);
             foreach (char s in text)
             {
-                int number = Alphabet.CheckSymbol(s);
                 int position = Alphabet.GetSymbol(alf, s);
                 int index = (position + step) % 32;
                 if (index <= 0)

@@ -50,6 +50,7 @@ namespace App3.Помошники
             int inc = 0;
             byte[] N_512 = BitConverter.GetBytes(512);
             byte[] paddedMes = new byte[BLOCK_LENGTH];
+
             while (len >= 512)
             {
                 inc++;

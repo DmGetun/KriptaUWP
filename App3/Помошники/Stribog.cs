@@ -81,7 +81,9 @@ namespace App3.Помошники
             }
             return temp;
         }
-
+        /*
+            XOR двух 512-битных последовательностей 
+        */
         private byte[] X(byte[] a, byte[] b)
         {
             byte[] x = new byte[BLOCK_LENGTH];
@@ -91,7 +93,10 @@ namespace App3.Помошники
             }
             return x;
         }
-
+        /*
+            Процедура подстановки.
+            Каждый байт заменяется байтом из таблицы подстановки.
+        */
         private byte[] S(byte[] s)
         {
             byte[] r = new byte[BLOCK_LENGTH];
@@ -101,7 +106,10 @@ namespace App3.Помошники
             }
             return r;
         }
-
+        /*
+            Процедура перестановки.
+            
+        */
         private byte[] P(byte[] s)
         {
             byte[] r = new byte[BLOCK_LENGTH];
