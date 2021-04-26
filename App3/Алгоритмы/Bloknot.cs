@@ -59,7 +59,7 @@ namespace UWP.Алгоритмы
 
             for (int i = 0; i < numbersSymbols.Count; i++)
             {
-                int index = (33 + numbersSymbols[i] - numbers[i]) % 33;
+                int index = (alf.Length + numbersSymbols[i] - numbers[i]) % alf.Length;
                 str.Append(alf[index]);
             }
 
@@ -94,7 +94,7 @@ namespace UWP.Алгоритмы
             StringBuilder str = new StringBuilder();
             for(int i = 0; i < numbersSymbols.Count; i++)
             {
-                int index = (numbersSymbols[i] + numbers[i]) % 33;
+                int index = (numbersSymbols[i] + numbers[i]) % alf.Length;
                 str.Append(alf[index]);
             }
 

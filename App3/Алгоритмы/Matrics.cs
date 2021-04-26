@@ -37,9 +37,8 @@ namespace UWP.Алгоритмы
             matrix = new Matrix(matric);
             double[,] key = matrix.GetReverseMatric(); // вычисляем обратную матрицу
             if (matrix.flag)
-            {
                 throw new Error(Error.MatrixValue);
-            }
+
             int[] numbers = cipherText.Split(' ').
                             Where(x => !string.IsNullOrWhiteSpace(x)).
                             Select(x => int.Parse(x)).ToArray(); // перевод чисел в тип int
@@ -226,7 +225,7 @@ namespace UWP.Алгоритмы
                 str.Append('\r');
             }
 
-            return str.ToString();
+            return str.Remove(str.Length - 1,1).ToString();
         }
     }
 }

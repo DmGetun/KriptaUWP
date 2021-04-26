@@ -29,7 +29,7 @@ namespace UWP.Алгоритмы
             foreach (char s in plainText)
             {
                 int number = alf_f.IndexOf(s) + 1;
-                int indexCipherSymbol = Alphabet.SYMBOLS_COUNT - number + 1;
+                int indexCipherSymbol = alf_f.Length - number + 1;
                 str.Append(alf[indexCipherSymbol]);
             }
             return str.ToString();
@@ -52,7 +52,7 @@ namespace UWP.Алгоритмы
             foreach (char s in cipherText)
             {
                 int number = alf_f.IndexOf(s) + 1;
-                int indexPlainSymbol = Alphabet.SYMBOLS_COUNT - number;
+                int indexPlainSymbol = alf_f.Length - number;
                 str.Append(alf_f[indexPlainSymbol]);
             }
             return str.ToString();

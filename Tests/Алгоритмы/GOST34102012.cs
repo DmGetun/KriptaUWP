@@ -15,17 +15,27 @@ namespace UWP.Алгоритмы
         private BigInteger hash;
         private BigInteger hash2;
         private BigInteger hash1;
+        private BigInteger a, b, Xa;
+        private Point G;
         private int k;
         private byte[] byteHash;
 
         public override string Name => "ГОСТ Р 34.10-2012";
         public override string DefaultKey => "a=2\rb=7\rp=11\rXa=6\rG=(10,9)";
         public override bool IsReplaceText => true;
-        public int Xa { get; private set; }
         public Point Yu { get; private set; }
         public override string CheckKey(string key)
         {
             throw new NotImplementedException();
+        }
+
+        public GOST34102012(BigInteger a,BigInteger b, BigInteger p, BigInteger Xa, Point G)
+        {
+            this.a = a;
+            this.b = b;
+            this.p = p;
+            this.Xa = Xa;
+            this.G = G;
         }
         /*
             Получаем сообщение и r,s
@@ -42,24 +52,18 @@ namespace UWP.Алгоритмы
             BigInteger[] numbers = ParseText(cipherText);
             BigInteger r = numbers[0];
             BigInteger s = numbers[1];
-            int[] keys = ParseKey(config.Key);
-            int a = keys[0];
-            int b = keys[1];
-            int p = keys[2];
-            int Xa = keys[3];
-            BigInteger x_ = new BigInteger(keys[4]);
-            BigInteger y_ = new BigInteger(keys[5]);
+            BigInteger[] keys = ParseKey(config.Key);
             Elliptic elliptic = new Elliptic(a, b, p);
-            Point G = elliptic.CheckPoint(new Point(x_, y_));
-            q = elliptic.Calculate_Q(p);
+            q = elliptic.Calculate_Q();
 
             Yu = elliptic.GetValue(Xa, G);
             if (!(0 < r || s < q))
                 return "Подпись не верна.";
 
             Stribog stribog = new Stribog();
-            byteHash = stribog.GetHashMessage(text);
-            hash = new BigInteger(stribog.GetHashMessage(text));
+            /*            byteHash = stribog.GetHashMessage(text);
+                        hash = new BigInteger(stribog.GetHashMessage(text));*/
+            hash = GetHashMessage(text, p);
             if (hash < 0) hash = -hash;
             hash2 = hash;
             BigInteger f = F(q) - 1;
@@ -92,20 +96,16 @@ namespace UWP.Алгоритмы
         */
         public override string Encrypt(string plainText, Config config)
         {
-            int[] keys = ParseKey(config.Key);
+            //BigInteger[] keys = ParseKey(config.Key);
             var alf = Alphabet.GenerateAlphabet();
 
-            BigInteger a = keys[0];
-            BigInteger b = keys[1];
-            BigInteger p = keys[2];
-            Xa = keys[3];
             Elliptic elliptic = new Elliptic(a, b, p);
-            Point G = elliptic.CheckPoint(new Point(keys[4], keys[5]));
-            q = elliptic.Calculate_Q(p);
+            q = elliptic.Calculate_Q();
 
             Stribog stribog = new Stribog();
 
-            hash = new BigInteger(stribog.GetHashMessage(plainText));
+            /*hash = new BigInteger(stribog.GetHashMessage(plainText));*/
+            hash = GetHashMessage(plainText, p);
             if (hash < 0) hash = -hash;
             hash1 = hash;
             BigInteger e = hash % q;
@@ -116,7 +116,7 @@ namespace UWP.Алгоритмы
             BigInteger s = 0;
             do
             {
-                k = new Random().Next(1, (int)q);
+                //k = new Random().Next(1, (int)q);
                 P = elliptic.GetValue(k, G);
                 r = P.X % q;
                 if (r < 0) r += q;
@@ -204,14 +204,14 @@ namespace UWP.Алгоритмы
             Разбиваем введенный пользователем ключ 
             на коэффициенты a,b,p,Xa,G
         */
-        private int[] ParseKey(string key)
+        private BigInteger[] ParseKey(string key)
         {
             string[] keys = key.Split('\r');
-            int[] numbers = new int[keys.Length + 1];
-            int number = 0;
+            BigInteger[] numbers = new BigInteger[keys.Length + 1];
+            BigInteger number = 0;
             for (int i = 0; i < keys.Length - 1; i++)
             {
-                if (int.TryParse(keys[i].Substring(keys[i].IndexOf('=') + 1), out number))
+                if (BigInteger.TryParse(keys[i][(keys[i].IndexOf('=') + 1)..], out number))
                 {
                     numbers[i] = number;
                 }
@@ -220,10 +220,10 @@ namespace UWP.Алгоритмы
 
             string temp = keys[keys.Length - 1].Replace("(", "").Replace(")", "");
             string[] pt = temp.Substring(temp.IndexOf("=") + 1).Split(",");
-            int X, Y;
-            if (!int.TryParse(pt[0], out X))
+            BigInteger X, Y;
+            if (!BigInteger.TryParse(pt[0], out X))
                 throw new Error(Error.InvalidValueKey);
-            if (!int.TryParse(pt[1], out Y))
+            if (!BigInteger.TryParse(pt[1], out Y))
                 throw new Error(Error.InvalidValueKey);
             numbers[numbers.Length - 2] = X;
             numbers[numbers.Length - 1] = Y;

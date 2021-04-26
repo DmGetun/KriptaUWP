@@ -78,7 +78,7 @@ namespace UWP.Алгоритмы
             string error = CheckKey(key);
 
             var keyAlf = Alphabet.GenerateKeyAlphabet(key, alf);
-            var alf_f = keyAlf[1];
+            var alf_f = keyAlf[0];
 
             StringBuilder cipherText = new StringBuilder();
             for (int i = 0; i < plainText.Length; i++)

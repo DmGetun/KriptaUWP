@@ -55,7 +55,16 @@ namespace UWP.Алгоритмы
 
         public override string KeyView()
         {
-            return null;
+            var alf = Alphabet.PolibiiAlphabet();
+            int i = 0;
+            StringBuilder str = new StringBuilder();
+            foreach(char key in alf.Keys)
+            {
+                str.Append($"{key}:{alf[key]} ");
+                i++;
+                if (i % 6 == 0) str.Append("\r");
+            }
+            return str.ToString();
         }
     }
 }

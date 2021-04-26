@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UWP.Алгоритмы;
 
 namespace UWP.Помошники
 {
@@ -149,12 +150,13 @@ namespace UWP.Помошники
 
         public static string[] GenerateKeyAlphabet(string key, Dictionary<int, string> alf)
         {
-            var keyAlf = new string[key.Length];
-            for (int i = 0; i < key.Length; i++)
+            var keyAlf = new string[key.Length + 1];
+            keyAlf[0] = new string(Alphabet.GenerateAlphabet().Values.ToArray());
+            for (int i = 1,j = 0; i <= key.Length; i++,j++)
             {
                 foreach (string s in alf.Values)
                 {
-                    if (s.ToUpper()[0] == key.ToUpper()[i])
+                    if (s.ToUpper()[0] == key.ToUpper()[j])
                     {
                         keyAlf[i] = s;
                     }
@@ -189,9 +191,33 @@ namespace UWP.Помошники
             return text;
         }
 
+        public static string ReplaceTextBeforeEncrypt(string text,string algoritm)
+        {
+            text = text.Replace(" ", "ПРБЛ").Replace(",", "ЗПТ").Replace(".", "ТЧК").Replace("-", "ТИРЕ");
+            text = text.Replace("\r\r", "ДАБЛНОВСТР").Replace("\r", "НОВСТР");
+            if (algoritm == "Шифр Плейфера")
+            {
+                text = text.Replace('Ъ', 'Ь').Replace('Й', 'И').Replace('Ё', 'Е');
+                text = text.Replace('ъ', 'ь').Replace('й', 'и').Replace('ё', 'е');
+            }
+            StringBuilder str = new StringBuilder();
+            foreach (char s in text)
+            {
+                if ((s >= 'А' && s <= 'Я') || (s >= 'а' && s <= 'я') || (s >= '0' && s <= '9'))
+                    str.Append(s);
+            }
+
+            return str.ToString();
+        }
+
+        public static string ReplaceTextAfterDecrypt(string text)
+        {
+            return text.Replace("ПРБЛ", " ").Replace("ЗПТ", ",").Replace("ТЧК", ".").Replace("ТИРЕ", "-").Replace("ДАБЛНОВСТР", "\r\r").Replace("НОВСТР", "\r");
+        }
+
         public static int GetSymbol(Dictionary<int, char> alf, char symbol)
         {
-            for (int i = 1; i < 33; i++)
+            for (int i = 1; i <= alf.Count; i++)
             {
                 if (symbol == alf[i])
                 {
@@ -211,13 +237,17 @@ namespace UWP.Помошники
                 for (int j = 1; j <= 6; j++)
                 {
                     index = i.ToString() + j.ToString();
-                    alf[Convert.ToChar(k++)] = index;
-                    if (index == "63")
-                    {
-                        break;
-                    }
+                    alf.Add(Convert.ToChar(k++), index);
+                    if (index == "63") break;
                 }
             }
+/*            string s = "0123456789";
+            int c = 0;
+            for(int i = 6; i <= 7; i++)
+            {
+                for (int j = 4; j <= 6; j++)
+                    alf.Add(s[c++],i.ToString() + j.ToString());
+            }*/
             return alf;
         }
 
@@ -231,6 +261,10 @@ namespace UWP.Помошники
             {
                 alf[index++] = Convert.ToChar(i);
             }
+/*            for(int i = '0'; i <= '9'; i++)
+            {
+                alf[index++] = Convert.ToChar(i);
+            }*/
             return alf;
         }
 
@@ -298,13 +332,14 @@ namespace UWP.Помошники
             var alf_s = GenForTritemy();
             int index = 1;
             int start = 0;
+            //int stop = 31 + 10;
             int stop = 31;
             StringBuilder str = new StringBuilder();
             do
             {
-                for (int i = start; i < start + SymbolsCount; i++)
+                for (int i = start; i < start + alf_s.Count; i++)
                 {
-                    str.Append(alf_s[i % 32]);
+                    str.Append(alf_s[i % alf_s.Count]);
                 }
                 alf[index++] = str.ToString();
                 str.Clear();
@@ -317,6 +352,7 @@ namespace UWP.Помошники
         public static char[,] GenerateMatrixAlphabet(string key)
         {
             int ROWS = 5;
+            //int COLS = 8;
             int COLS = 6;
             char[,] matrix = new char[ROWS, COLS];
             string _alf = new string(GenerateAlphabet().Values.ToArray<char>());
@@ -331,8 +367,6 @@ namespace UWP.Помошники
             
             alf = alf.Remove(alf.IndexOf('Ъ'), 1).Remove(alf.IndexOf('Й'), 1);
             key = key + alf;
-            StringBuilder str = new StringBuilder();
-            str.Append(key);
             char[] set = new HashSet<char>(key).ToArray<char>();
 
             for (int i = 0; i < ROWS; i++)

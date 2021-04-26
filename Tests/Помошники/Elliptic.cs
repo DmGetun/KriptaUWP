@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -28,9 +29,15 @@ namespace UWP.Помошники
             return true;
         }
 
-        public Point GetValue(int number, Point point)
+        public Point GetValue(BigInteger number, Point point)
         {
-            string num = Convert.ToString(number, 2);
+            var num_ = new BitArray(number.ToByteArray());
+            StringBuilder str = new StringBuilder();
+            foreach (bool value in num_)
+                str.Append(value ? "1" : "0");
+            string num = str.ToString();
+            num = new string(num[..(num.LastIndexOf("1") + 1)].Reverse().ToArray());
+
             Point rez = new Point(point.X,point.Y);
 
             for (int i = 1; i < num.Length; i++)
@@ -66,6 +73,9 @@ namespace UWP.Помошники
 
             int f = (int)F(p) - 1;
 
+            if (y == p + 1)
+                return point;
+
             BigInteger ap = ((3 * (int)Math.Pow(x, 2) + a) * BigInteger.Pow(2 * y, f)) % p;
             if (ap < 0) ap = p + ap;
             BigInteger x3 = (BigInteger.Pow(ap, 2) - (2 * x)) % p;
@@ -83,10 +93,14 @@ namespace UWP.Помошники
             BigInteger x2 = point2.X;
             BigInteger y2 = point2.Y;
 
+            if (x1 == x2 && y1 == y2)
+                return DoublePoint(point1);
+
             int f = (int)F(p) - 1;
 
             BigInteger ap = (y2 - y1) * BigInteger.Pow(x2 - x1, f) % p;
             if (ap < 0) ap = p + ap;
+            
             BigInteger x3 = (BigInteger.Pow(ap, 2) - x1 - x2) % p;
             if (x3 < 0) x3 = p + x3;
             BigInteger y3 = (ap * (x1 - x3) - y1) % p;
@@ -114,13 +128,13 @@ namespace UWP.Помошники
         {
             uint pointCount = 0;
             List<BigInteger> squareY = new List<BigInteger>();
-            for(int y = 0; y <= 9; y++)
+            for(BigInteger y = 0; y <= p; y++)
             {
                 squareY.Add(Pow(y,2,p));
             }
-            for(int x = 0; x <= 10; x++)
+            for(BigInteger x = 0; x <= p; x++)
             {
-                int y = ((int)Math.Pow(x, 3) + (int)a * x + (int)b) % (int)p;
+                BigInteger y = (BigInteger.Pow(x, 3) + a * x + b) % p;
                 if (squareY.IndexOf(y) != -1)
                     pointCount += 2;
             }
@@ -129,10 +143,10 @@ namespace UWP.Помошники
             var rez = TrialDivision(pointCount);
             if (rez.Count == 1)
                 rez.Add(1);
-            uint cof = rez.Min();
-            uint q = pointCount / cof;
+            BigInteger cof = rez.Min();
+            BigInteger q = pointCount / cof;
 
-            return new BigInteger(q);
+            return q;
         }
 
         private BigInteger Pow(BigInteger x, BigInteger p, BigInteger m)
@@ -147,9 +161,9 @@ namespace UWP.Помошники
             return r;
         }
 
-        static List<uint> TrialDivision(uint n)
+        static List<BigInteger> TrialDivision(BigInteger n)
         {
-            var divides = new List<uint>();
+            var divides = new List<BigInteger>();
             var div = 2u;
             while (n > 1)
             {

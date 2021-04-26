@@ -125,6 +125,13 @@ namespace UWP.Алгоритмы
             разбиваем текст на блоки.
             В цикле по количеству блоков шифруем блок.
         */
+        public byte[] Encrypt(byte[] plainText, byte[] key)
+        {
+            Config config = new Config { Key = Encoding.Unicode.GetString(key) };
+            string text = Encoding.Unicode.GetString(plainText);
+
+            return Encoding.Unicode.GetBytes(Encrypt(text, config));
+        }
         public override string Encrypt(string plainText, Config config)
         {
             string _key = CheckKey(config.Key);
@@ -495,7 +502,9 @@ namespace UWP.Алгоритмы
 
         public override string GenerateKey()
         {
-            throw new NotImplementedException();
+            byte[] key = new byte[128 / 8];
+            new Random().NextBytes(key);
+            return Encoding.Unicode.GetString(key);
         }
 
         public override string KeyView()

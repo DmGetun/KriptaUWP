@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using UWP.Помошники;
@@ -9,15 +10,18 @@ namespace UWP.Алгоритмы
 {
     class Magma : Algorithm
     {
-        byte[][] table = new byte[8][] {
-        new byte[] {12, 4, 6, 2, 10, 5, 11, 9, 14, 8, 13, 7, 0, 3, 15, 1 },
-        new byte[] {6, 8, 2, 3, 9, 10, 5, 12, 1, 14, 4, 7, 11, 13, 0, 15 },
-        new byte[] {11, 3, 5, 8, 2, 15, 10, 13, 14, 1, 7, 4, 12, 9, 6, 0 },
-        new byte[] {12, 8, 2, 1, 13, 4, 15, 6, 7, 0, 10, 5, 3, 14, 9, 11 },
-        new byte[] {7, 15, 5, 10, 8, 1, 6, 13, 0, 9, 3, 14, 11, 4, 2, 12 },
-        new byte[] {5, 13, 15, 6, 9, 2, 12, 10, 11, 7, 8, 1, 4, 3, 14, 0 },
-        new byte[] {8, 14, 2, 5, 6, 9, 1, 12, 15, 4, 11, 0, 13, 10, 3, 7 },
-        new byte[] {1, 7, 14, 13, 0, 5, 8, 3, 4, 15, 10, 6, 9, 12, 11, 2 } };
+        private readonly byte[][] table =
+        {
+            //            0     1     2     3     4     5     6     7     8     9     A     B     C     D     E     F
+            new byte[] { 0x0C, 0x04, 0x06, 0x02, 0x0A, 0x05, 0x0B, 0x09, 0x0E, 0x08, 0x0D, 0x07, 0x00, 0x03, 0x0F, 0x01 },
+            new byte[] { 0x06, 0x08, 0x02, 0x03, 0x09, 0x0A, 0x05, 0x0C, 0x01, 0x0E, 0x04, 0x07, 0x0B, 0x0D, 0x00, 0x0F },
+            new byte[] { 0x0B, 0x03, 0x05, 0x08, 0x02, 0x0F, 0x0A, 0x0D, 0x0E, 0x01, 0x07, 0x04, 0x0C, 0x09, 0x06, 0x00 },
+            new byte[] { 0x0C, 0x08, 0x02, 0x01, 0x0D, 0x04, 0x0F, 0x06, 0x07, 0x00, 0x0A, 0x05, 0x03, 0x0E, 0x09, 0x0B },
+            new byte[] { 0x07, 0x0F, 0x05, 0x0A, 0x08, 0x01, 0x06, 0x0D, 0x00, 0x09, 0x03, 0x0E, 0x0B, 0x04, 0x02, 0x0C },
+            new byte[] { 0x05, 0x0D, 0x0F, 0x06, 0x09, 0x02, 0x0C, 0x0A, 0x0B, 0x07, 0x08, 0x01, 0x04, 0x03, 0x0E, 0x00 },
+            new byte[] { 0x08, 0x0E, 0x02, 0x05, 0x06, 0x09, 0x01, 0x0C, 0x0F, 0x04, 0x0B, 0x00, 0x0D, 0x0A, 0x03, 0x07 },
+            new byte[] { 0x01, 0x07, 0x0E, 0x0D, 0x00, 0x05, 0x08, 0x03, 0x04, 0x0F, 0x0A, 0x06, 0x09, 0x0C, 0x0B, 0x02 }
+        };
         public override string Name => "Простая замена ГОСТ 28147";
 
         public override string DefaultKey => "1234567890ABCDEF";
@@ -28,7 +32,7 @@ namespace UWP.Алгоритмы
         bool flagD = false;
 
         private string Key;
-
+        private byte[] bfs;
         private readonly int BLOCK_SIZE = 8;
 
         public override string CheckKey(string key)
@@ -84,12 +88,22 @@ namespace UWP.Алгоритмы
             return result;
         }
 
+        public byte[] Encrypt(byte[] text, byte[] key)
+        {
+            bfs = text; 
+            string t = Encoding.Unicode.GetString(text);
+            string k = Encoding.Unicode.GetString(key);
+            Config config = new Config { Key = k };
+            return Encoding.Unicode.GetBytes(Encrypt(t, config));
+        }
         public override string Encrypt(string plainText, Config config)
         {
+            
             string key = CheckKey(config.Key);
             Key = key;
-            byte[] text = Encoding.Unicode.GetBytes(plainText);
-            text = DopBlock(text);
+            //byte[] text = Encoding.Unicode.GetBytes(plainText);
+            byte[] text = bfs;
+            //text = DopBlock(text);
             uint[] keys = GenerateKeys(key);
             byte[] block = new byte[BLOCK_SIZE];
             byte[] cipherBlocks = new byte[text.Length];
@@ -110,22 +124,11 @@ namespace UWP.Алгоритмы
             byte[] N2 = new byte[block.Length / 2];
             Array.Copy(block, 0, N1, 0, 4);
             Array.Copy(block, 4, N2, 0, 4);
-
-            for (int i = 0; i < 32; i++)
-            {
-                uint CM1 = (uint)((BitConverter.ToUInt32(N1, 0) + keys[i]) % Math.Pow(2, 32));
-                byte[] K = Replfacement(CM1);
-                uint R = BitConverter.ToUInt32(K, 0);
-                R = (R << 11) | (R >> 21);
-                uint CM2 = R ^ BitConverter.ToUInt32(N2, 0);
-                if (i < 31)
-                {
-                    N2 = N1;
-                    N1 = BitConverter.GetBytes(CM2);
-                }
-                else
-                    N2 = BitConverter.GetBytes(CM2);
-            }
+            Console.WriteLine(BitConverter.ToString(N1));
+            Console.WriteLine(BitConverter.ToString(N2));
+            byte[] temp = N2;
+            N2 = N1;
+            E(ref N1, ref temp,keys);
 
             var output = new byte[8];
 
@@ -138,17 +141,64 @@ namespace UWP.Алгоритмы
             return output;
         }
 
-        private byte[] Replfacement(uint cM1)
+        private void E(ref byte[] N1, ref byte[] N2, uint[] keys)
+        {
+            for (int i = 0; i < 32; i++)
+            {
+                byte[] CM1 = BitConverter.GetBytes(BitConverter.ToUInt32(N1, 0) + keys[i]);
+                byte[] K = Replfacement(CM1);
+                uint R = BitConverter.ToUInt32(K, 0);
+                R = (R << 11) | (R >> 21);
+                byte[] CM2 = XOR(BitConverter.GetBytes(R), N2);
+                if (i < 31)
+                {
+                    N2 = N1;
+                    N1 = CM2;
+                }
+                else
+                    N2 = CM2;
+
+                Console.WriteLine($"{i}(a1,a0) = {BitConverter.ToString(N2).Replace("-", "").ToLower()} , {BitConverter.ToString(N1).Replace("-", "").ToLower()}");
+            }
+        }
+
+        private byte[] XOR(byte[] k, byte[] a)
+        {
+            byte[] result = new byte[4];
+            for (int i = 0; i < 4; i++)
+            {
+                result[i] = (byte)(k[i] ^ a[i]);
+            }
+            return result;
+        }
+
+        private byte[] Replfacement(byte[] cM1)
         {
 
-            uint result = 0;
-            for (int i = 0; i < 8; i++)
+            byte[] result = new byte[4];
+            cM1 = ToFourBitsArray(cM1);
+            int step = 0;
+            for (int i = 0; i < 4; i++)
             {
-                var temp = (byte)((cM1 >> (4 * i)) & 0x0f);
-                temp = table[i][temp];
-                result |= (UInt32)temp << (4 * i);
+                for (int j = 0; j < 2; j++)
+                {
+                    byte temp = table[step++][((cM1[i] >> (4 * j)) & 0b_1111)];
+                    result[i] = (byte)(result[i] << (4 * j) | temp);
+                }
+                
             }
-            return BitConverter.GetBytes(result);
+            return result;
+        }
+
+        public static byte[] ToFourBitsArray(byte[] arr)
+        {
+            byte[] res = new byte[8];
+            for (int i = 0; i < 4; i++)
+            {
+                res[2 * i] = (byte)(arr[i] % 16);
+                res[2 * i + 1] = (byte)(arr[i] / 16);
+            }
+            return res;
         }
 
         private uint[] GenerateKeys(string key)
@@ -165,6 +215,9 @@ namespace UWP.Алгоритмы
             {
                 result[i] = BitConverter.ToUInt32(keys, 28 - (i * 4) % 32);
             }
+
+            for (int i = 0; i < 32; i++)
+                Console.WriteLine($"{i + 1}: " + BitConverter.ToString(BitConverter.GetBytes(result[i])));
 
             return result;
         }

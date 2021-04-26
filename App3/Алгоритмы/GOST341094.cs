@@ -46,9 +46,9 @@ namespace UWP.Алгоритмы
             if (y < 0) y += p;
 
             Stribog stribog = new Stribog();
-            BigInteger h = new BigInteger(stribog.GetHashMessage(text));
+            BigInteger h = new BigInteger(stribog.GetHashMessage(text)) % q;
             if (h < 0) h = -h;
-            if (h == 0) h = 1;
+            if ((h % q) == 0) h = 1;
 
             BigInteger v = Pow(h, q - 2, q);
             if (v < 0) v += q;
@@ -57,9 +57,12 @@ namespace UWP.Алгоритмы
 
             BigInteger z2 = ((q - r) * v) % q;
             if (z2 < 0) z2 += q;
-            BigInteger u = Pow(a,z1,p) * Pow(y,z2,p) % q;
+            BigInteger u1 = (Pow(a,z1,p) * Pow(y,z2,p)) % p;
+            if (u1 < 0) u1 += p;
+            BigInteger u = u1 % q;
+            if (u < 0) u += q;
             if (u == r)
-                return "Подпись верна";
+                return $"u = {u} === r = {r}.Подпись верна";
             return "Подпись не верна";
         }
         /*
@@ -99,15 +102,18 @@ namespace UWP.Алгоритмы
             a = Calculate_a(p,q);
 
             Stribog stribog = new Stribog();
-            BigInteger h = new BigInteger(stribog.GetHashMessage(plainText));
+            BigInteger h = new BigInteger(stribog.GetHashMessage(plainText)) % q;
             if (h < 0) h = -h;
-            if (h == 0) h = 1;
+            if ((h % q) == 0) h = 1;
             BigInteger r = 0;
+            BigInteger rr = 0;
             BigInteger s = 0;
             do
             {
                 BigInteger k = Calculate_k(q);
-                r = Pow(a, k, p) % q;
+                rr = Pow(a, k, p);
+                if (rr < 0) rr += p;
+                r = rr % q;
                 if (r < 0) r += q;
                 s = (x * r + k * h) % q;
                 if (s < 0) s += q;
@@ -125,6 +131,8 @@ namespace UWP.Алгоритмы
                 throw new Error("Число q не простое");
             if(x >= q)
                 throw new Error("Число x должно быть меньше q");
+            if ((p - 1) % q != 0)
+                throw new Error("Число q не является сомножителем числа p -1");
         }
         /*
             Проверка на простоту числа 

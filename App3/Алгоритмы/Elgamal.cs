@@ -18,6 +18,8 @@ namespace UWP.Алгоритмы
 
         public override bool IsReplaceText => true;
 
+        public int TextLen { get; private set; }
+
         /*
             Проверка ключа.
             Получаем строковый ключ,
@@ -70,6 +72,7 @@ namespace UWP.Алгоритмы
         public override string Decrypt(string cipherText, Config config)
         {
             var keys = TransformKey(CheckKey(config.Key));
+            TextLen = cipherText.Length; 
             var alf = Alphabet.GenerateAlphabet();
             int[] textNumbers = GetNumbersText(cipherText);
             int len = textNumbers.Length;
@@ -126,7 +129,7 @@ namespace UWP.Алгоритмы
         {
             var keys = TransformKey(CheckKey(config.Key));
             var alf = Alphabet.GenerateAlphabet();
-
+            TextLen = plainText.Length;
             p = keys[0];
             if (!IsTheNumberSimple(p)) return "Число p не простое.";
 
@@ -228,7 +231,15 @@ namespace UWP.Алгоритмы
 
         public override string GenerateKey()
         {
-            throw new NotImplementedException();
+            int p = 0, g = 0, x = 0;
+            Random rand = new Random();
+            do
+            {
+                p = rand.Next(TextLen, TextLen + 100);
+            } while (!IsTheNumberSimple(p));
+            x = rand.Next(2, p);
+            g = rand.Next(2, p);
+            return $"p={p} \rg={g} \rx={x}";
         }
     }
 }

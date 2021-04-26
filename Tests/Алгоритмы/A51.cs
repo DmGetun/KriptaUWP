@@ -21,7 +21,7 @@ namespace UWP.Алгоритмы
         BitArray R2 = new BitArray(22);
         BitArray R3 = new BitArray(23);
 
-        private int bitCount = 228;
+        private int bitCount = 114;
         private static byte[] Key;
         byte[] encrypt = null;
         bool flagD = false;
@@ -50,6 +50,9 @@ namespace UWP.Алгоритмы
             Расшифрование A5/1
             Функция аналогична функции шифрования.
          */
+
+
+
         public override string Decrypt(string cipherText, Config config)
         {
             flagD = true;
@@ -62,6 +65,15 @@ namespace UWP.Алгоритмы
             Для каждого фрейма генерируем гамму, складываем биты текста с битами гаммы по модулю 2,
             получившийся массив бит конвертируем в строку.
         */
+
+        public byte[] Encrypt(byte[] text, byte[] key)
+        {
+            string plain = Encoding.Unicode.GetString(text);
+            string keys = Encoding.Unicode.GetString(key);
+            Config config = new Config { Key = keys };
+            return Encoding.Unicode.GetBytes(Encrypt(plain, config));
+        }
+
         public override string Encrypt(string plainText, Config config)
         {
             string k = CheckKey(config.Key);
@@ -84,14 +96,15 @@ namespace UWP.Алгоритмы
                 frameCount++;
             }
 
-            int[] frame = new int[1] { 0x134 };
+            int[] frame = new int[1] { 0x000134 };
             BitArray res = new BitArray(msg.Length);
             for (int i = 0; i < frameCount; i++)
             {
                 frame[0] = i;
                 Initialize(key, frame);
                 BitArray stream = GetStream();
-                
+                byte[] streamb = GetByteArray(stream);
+                Console.WriteLine(BitConverter.ToString(streamb));
                 for (int j = 0; j < bitCount; j++)
                 {
                     if (i * bitCount + j == msg.Count) break;
@@ -102,6 +115,26 @@ namespace UWP.Алгоритмы
             }
             flagD = false;
             return GetString(res);
+        }
+
+        private byte[] GetByteArray(BitArray stream)
+        {
+            StringBuilder str = new StringBuilder();
+            byte[] rez = new byte[15];
+            for(int i = 0; i < stream.Length; i++)
+            {
+                str.Append(stream[i] ? '1' : '0');
+            }
+            for (int i = 0; i < str.Length / 8; i++)
+            {
+                string arr = string.Empty;
+                for (int j = 0; j < 8; j++)
+                {
+                    arr += str[i * 8 + j];
+                }
+                rez[i] = Convert.ToByte(arr,2);
+            }
+            return rez;
         }
 
         /*

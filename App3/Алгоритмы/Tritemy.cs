@@ -29,17 +29,17 @@ namespace UWP.Алгоритмы
         */
         public override string Decrypt(string cipherText, Config config)
         {
-            var alf = Alphabet.AlphabetTritemy(); // таблица Тритемия
-
-            var alf_f = alf[1];
+            var alf = new string(Alphabet.GenerateAlphabet().Values.ToArray()); // таблица Тритемия
 
             StringBuilder plainText = new StringBuilder();
             for (int i = 0; i < cipherText.Length; i++)
             {
                 char symbol = cipherText[i];
-                int numberString = i % Alphabet.SYMBOLS_COUNT + 1; // номер строки исходя из ключа
-                int index = alf[numberString].IndexOf(symbol);
-                char plainSymbol = alf_f[index];
+
+                int index = alf.IndexOf(symbol);
+                int plainIndex = (index - i) % alf.Length;
+                if (plainIndex < 0) plainIndex += alf.Length;
+                char plainSymbol = alf[plainIndex];
                 plainText.Append(plainSymbol);
             }
             return plainText.ToString();
@@ -53,16 +53,16 @@ namespace UWP.Алгоритмы
          */
         public override string Encrypt(string plainText, Config config)
         {
-            var alf = Alphabet.AlphabetTritemy();
-            var alf_f = alf[1];
+            var alf = new string(Alphabet.GenerateAlphabet().Values.ToArray());
 
             StringBuilder cipherText = new StringBuilder();
             for (int i = 0; i < plainText.Length; i++)
             {
                 char symbol = plainText[i];
-                int index = alf_f.IndexOf(symbol);
-                int numberString = i % Alphabet.SYMBOLS_COUNT + 1; // номер строки исходя из ключа
-                char cipherSymbol = alf[numberString][index]; // зашифрованный символ по номеру строки и позиции символа
+                int index = alf.IndexOf(symbol);
+                int cipherIndex = (index + i)% alf.Length;
+                if (cipherIndex < 0) cipherIndex += alf.Length;
+                char cipherSymbol = alf[cipherIndex]; // зашифрованный символ по номеру строки и позиции символа
                 cipherText.Append(cipherSymbol);
             }
             return cipherText.ToString();
@@ -75,7 +75,7 @@ namespace UWP.Алгоритмы
 
         public override string KeyView()
         {
-            return null;
+            return "";
         }
     }
 }

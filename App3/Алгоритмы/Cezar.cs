@@ -28,11 +28,9 @@ namespace UWP.Алгоритмы
             {
                 int number = Alphabet.CheckSymbol(s);
                 int position = Alphabet.GetSymbol(alf, s);
-                int index = (position - step) % 32;
+                int index = (position - step) % alf.Count;
                 if (index <= 0)
-                {
-                    index = 32 + index;
-                }
+                    index += alf.Count;
                 str.Append(alf[index]);
             }
             return str.ToString();
@@ -68,11 +66,10 @@ namespace UWP.Алгоритмы
             foreach (char s in text)
             {
                 int position = Alphabet.GetSymbol(alf, s);
-                int index = (position + step) % 32;
+                int index = (position + step) % alf.Count;
                 if (index <= 0)
-                {
-                    index = 32 + index;
-                }
+                    index += alf.Count;
+                
                 str.Append(alf[index]);
             }
             return str.ToString();
@@ -80,7 +77,7 @@ namespace UWP.Алгоритмы
 
         public override string KeyView()
         {
-            return null;
+            return "";
         }
 
         public override string GenerateKey()

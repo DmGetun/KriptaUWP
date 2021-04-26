@@ -18,10 +18,11 @@ namespace UWP.Алгоритмы
         public override bool IsReplaceText => true;
 
         BigInteger N, E, D;
+        private BigInteger hash_;
 
         public override string CheckKey(string key)
         {
-            string pattern = @"\w+,\d+";
+            string pattern = @"\w+[\w+][\d+]";
             if (!Regex.IsMatch(key, pattern))
                 throw new Error("Неверный формат сообщения для получателя");
             return key;
@@ -35,15 +36,16 @@ namespace UWP.Алгоритмы
         */
         public override string Decrypt(string cipherText, Config config)
         {
-            string[] textN = ParseText(CheckKey(cipherText));
+            string[] textN = ParseText(cipherText);
             string message = textN[0];
             BigInteger S;
             if (!BigInteger.TryParse(textN[1], out S))
                 throw new Error("Неверный формат сообщения для получателя");
 
             BigInteger f = F(N);
+            message = Alphabet.ReplaceTextBeforeEncrypt(message,"rsacp");
             BigInteger hash = GetHashMessage(message, N);
-
+            hash_ = hash;
 
             BigInteger m = Pow(S, E, N);
 
@@ -58,11 +60,11 @@ namespace UWP.Алгоритмы
         */
         private string[] ParseText(string cipherText)
         {
-            string[] temp = cipherText.Split('\r');
-            string values = temp[1].Trim();
-            string[] parse = values.Split(',');
-            string message = parse[0];
-            string cp = parse[1];
+            string[] temp = cipherText.Split("\rЦифровая подпись:");
+            string[] values = temp[0].Split("Сообщение:");
+
+            string message = values[1].Replace("[","").Replace("]","");
+            string cp = temp[1].Replace("[","").Replace("]","");
             return new string[] { message, cp };
         }
         /*
@@ -91,10 +93,13 @@ namespace UWP.Алгоритмы
 
             D = GetD(N, E, f);
             BigInteger hash = GetHashMessage(plainText,N);
+            hash_ = hash;
 
             BigInteger S = Pow(hash, D, N);
-
-            return string.Format("Получателю отправляется:\r{0},{1}", plainText, S);
+            plainText = Alphabet.ReplaceTextAfterDecrypt(plainText);
+            string message = $"Сообщение:[{plainText}]";
+            string keyNumber = $"Цифровая подпись:[{S}]";
+            return string.Format("Получателю отправляется:\r{0}\r{1}", message, keyNumber);
         }
         private bool IsTheNumberSimple(BigInteger n)
         {
@@ -182,6 +187,9 @@ namespace UWP.Алгоритмы
             for(int i = 0; i < keys.Length; i++)
             {
                 BigInteger number = 0;
+                string value = keys[i].Substring(keys[i].IndexOf("=") + 1);
+                if (string.IsNullOrEmpty(value))
+                    throw new Error("Не указан один из ключей");
                 if (!BigInteger.TryParse(keys[i].Substring(keys[i].IndexOf("=") + 1), out number))
                     throw new Error(Error.InvalidValueKey);
                 numbers[i] = number;
@@ -197,8 +205,9 @@ namespace UWP.Алгоритмы
         public override string KeyView()
         {
             string one = $"Открытый ключ: E={E},N={N}\r";
-            string two = $"Закрытый ключ: D={D}";
-            return one + two;
+            string two = $"Закрытый ключ: D={D}\r";
+            string three = $"Хеш сообщения: {hash_}";
+            return one + two + three;
         }
         /*
             Функция проверки чисел на взаимную простоту. 

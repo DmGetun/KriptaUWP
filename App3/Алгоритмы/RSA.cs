@@ -134,7 +134,9 @@ namespace UWP.Алгоритмы
 
             Parallel.For(0, len, i =>
             {
+
                  int index = alf.IndexOf(plainText[i]) + 1;
+
                  BigInteger number = (long)index;
 
                  number = Pow(number, e, N);
@@ -216,7 +218,19 @@ namespace UWP.Алгоритмы
 
         public override string GenerateKey()
         {
-            throw new NotImplementedException();
+            Random rand = new Random();
+            int P = 0, Q = 0;
+            do
+            {
+                P = rand.Next(1, 1000);
+            } while (!IsTheNumberSimple(new BigInteger(P)));
+
+            do
+            {
+                Q = rand.Next(1, 1000);
+            } while (!IsTheNumberSimple(new BigInteger(Q)));
+
+            return $"P={P}\rQ={Q}";
         }
     }
 }

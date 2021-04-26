@@ -45,6 +45,20 @@ namespace UWP.Помошники
             return rez;
         }
 
+        public bool IsGoodPoint(Point point)
+        {
+            BigInteger X = point.X;
+            BigInteger Y = point.Y;
+
+            BigInteger right = (BigInteger.Pow(X, 3) + a * X + b) % p;
+            if (right < 0) right = p + right;
+            BigInteger left = BigInteger.Pow(Y, 2) % p;
+            if (left < 0) left = p + left;
+
+            if (right == left) return true;
+            return false;
+        }
+
         public Point CheckPoint(Point point)
         {
             BigInteger X = point.X;

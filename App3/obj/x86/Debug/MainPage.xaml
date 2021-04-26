@@ -15,29 +15,32 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
+                <RowDefinition Height="1*"/>
                 <RowDefinition Height="4*"/>
                 <RowDefinition Height="3.0*"/>
                 <RowDefinition Height="1*"/>
                 <RowDefinition Height="4*"/>
             </Grid.RowDefinitions>
 
-            <TextBlock Text="Исходная фраза:" Margin="5,0,0,0"></TextBlock>
-            <TextBox x:ConnectionId='4' x:Name="OriginalText" Margin="0,20,5,0" Grid.Row="0" TextWrapping="Wrap" Grid.RowSpan="1" PlaceholderText="Введите исходную фразу"/>
+            <TextBlock x:ConnectionId='4' x:Name="AlgName" Grid.Row="0" Grid.Column="0" Text="Текущий алгоритм шифрования:" Margin="5,7,0,0"></TextBlock>
 
-            <TextBlock Grid.Row="1" Grid.Column="0" Text="Ключ:" Margin="5,7,0,0"></TextBlock>
-            <TextBox x:ConnectionId='5' x:Name="KeyArea" Grid.Row="1" Margin="0,30,5,0"  TextWrapping="Wrap" AcceptsReturn="True"/>
+            <TextBlock Grid.Row="1" Text="Исходная фраза:" Margin="5,0,0,0"></TextBlock>
+            <TextBox x:ConnectionId='5' x:Name="OriginalText" Margin="0,20,5,0" Grid.Row="1" TextWrapping="Wrap" Grid.RowSpan="1" PlaceholderText="Введите исходную фразу"/>
 
-            <Button x:ConnectionId='6' x:Name="GenerateKey" Grid.Row="2" Grid.Column="0" Margin="20,0,5,0">Генерация ключа</Button>
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="Ключ:" Margin="5,7,0,0"></TextBlock>
+            <TextBox x:ConnectionId='6' x:Name="KeyArea" Grid.Row="2" Margin="0,30,5,0"  TextWrapping="Wrap" AcceptsReturn="True"/>
 
-            <TextBlock Grid.Row="3" Grid.Column="0" Text="Зашифрованная фраза:" Margin="5,7,0,0"></TextBlock>
-            <TextBox x:ConnectionId='7' x:Name="cypherTextArea" Margin="0,30,5,0" Grid.Row="3" TextWrapping="Wrap" Grid.RowSpan="1" PlaceholderText="Зашифрованная фраза"/>
+            <Button x:ConnectionId='7' x:Name="GenerateKey" Grid.Row="3" Grid.Column="0" Margin="5,0,5,0">Генерация ключа</Button>
 
-            <TextBlock Grid.Row="3" Grid.Column="1" Text="Расшифрованная фраза:" Margin="10,7,0,0"></TextBlock>
-            <TextBox x:ConnectionId='8' x:Name="plainTextArea" Margin="5,30,0,0" Grid.Row="3" Grid.Column="1" TextWrapping="Wrap" Grid.RowSpan="1" PlaceholderText="Расшифрованная фраза"/>
-            <TextBlock Grid.Row="1" Grid.Column="1" Margin="10,7,0,0" Text="Вид ключа и ошибки:"></TextBlock>
-            <TextBox x:ConnectionId='9' x:Name="ErrorArea" Margin="5,30,0,0" Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Grid.RowSpan="1" PlaceholderText="Сообщения об ошибке" IsReadOnly="True"/>
-            <TextBlock Grid.Row="0" Grid.Column="1" Margin="5,0,0,0" Text="Вид внутри программы:"></TextBlock>
-            <TextBox x:ConnectionId='10' x:Name="ViewText" Margin="5,20,0,0" Grid.Row="0" Grid.Column="1" TextWrapping="Wrap" Grid.RowSpan="1" PlaceholderText="Вид внутри программы" IsReadOnly="True"/>
+            <TextBlock Grid.Row="4" Grid.Column="0" Text="Зашифрованная фраза:" Margin="5,7,0,0"></TextBlock>
+            <TextBox x:ConnectionId='8' x:Name="cypherTextArea" Margin="0,30,5,0" Grid.Row="4" TextWrapping="Wrap" Grid.RowSpan="1" PlaceholderText="Зашифрованная фраза"/>
+
+            <TextBlock Grid.Row="4" Grid.Column="1" Text="Расшифрованная фраза:" Margin="10,7,0,0"></TextBlock>
+            <TextBox x:ConnectionId='9' x:Name="plainTextArea" Margin="5,30,0,0" Grid.Row="4" Grid.Column="1" TextWrapping="Wrap" Grid.RowSpan="1" PlaceholderText="Расшифрованная фраза"/>
+            <TextBlock Grid.Row="2" Grid.Column="1" Margin="10,7,0,0" Text="Вид ключа и ошибки:"></TextBlock>
+            <TextBox x:ConnectionId='10' x:Name="ErrorArea" Margin="5,30,0,0" Grid.Row="2" Grid.Column="1" TextWrapping="Wrap" Grid.RowSpan="1" PlaceholderText="Сообщения об ошибке" IsReadOnly="True"/>
+            <TextBlock Grid.Row="1" Grid.Column="1" Margin="5,0,0,0" Text="Вид внутри программы:"></TextBlock>
+            <TextBox x:ConnectionId='11' x:Name="ViewText" Margin="5,20,0,0" Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Grid.RowSpan="1" PlaceholderText="Вид внутри программы" IsReadOnly="True"/>
         </Grid>
     </Grid>
 </Page>

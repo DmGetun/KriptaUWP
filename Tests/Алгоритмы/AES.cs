@@ -110,12 +110,27 @@ namespace UWP.Алгоритмы
             return temp;
         }
 
+        public byte[] Encrypt(byte[] plainText, byte[] key)
+        {
+            Config config = new Config { Key = Encoding.Unicode.GetString(key) };
+            string text = Encoding.Unicode.GetString(plainText);
+
+            return Encoding.Unicode.GetBytes(Encrypt(text, config));
+        }
+
+        public byte[] Decrypt(byte[] plainText, byte[] key)
+        {
+            Config config = new Config { Key = Encoding.Unicode.GetString(key) };
+            string text = Encoding.Unicode.GetString(plainText);
+
+            return Encoding.Unicode.GetBytes(Encrypt(text, config));
+        }
         public override string Encrypt(string plainText, Config config)
         {
             string _key = CheckKey(config.Key);
             byte[] key = Encoding.Unicode.GetBytes(_key);
             byte[] text = Encoding.Unicode.GetBytes(plainText);
-            text = DopBlock(text);
+            //text = DopBlock(text);
             Sbox = Tables.AES_Sbox;
             InvSbox = Tables.AES_InvSbox;
             Rcon = Tables.Rcon;
@@ -302,9 +317,9 @@ namespace UWP.Алгоритмы
 
         private byte[,] GenerateWordKeys(byte[,] keys)
         {
-            byte[,] w = new byte[44,4];
-            for(int i = 0; i < 4; i++)
-                for(int j = 0; j < 4; j++)
+            byte[,] w = new byte[44,Nk];
+            for(int i = 0; i < Nk; i++)
+                for(int j = 0; j < Nk; j++)
                 {
                     w[i, j] = keys[j, i]; 
                 }
@@ -387,10 +402,10 @@ namespace UWP.Алгоритмы
 
         private byte[,] GenerateSubKeys(byte[] key)
         {
-            byte[,] rez = new byte[Nk, Nk];
-            for (int i = 0; i < Nk; i++)
+            byte[,] rez = new byte[4, 4];
+            for (int i = 0; i < 4; i++)
             {
-                for (int j = 0; j < Nk; j++)
+                for (int j = 0; j < 4; j++)
                 {
                     rez[i,j] = key[i + 4 * j];
                 }
@@ -405,7 +420,7 @@ namespace UWP.Алгоритмы
             {
                 for(int j = 0; j < Nb; j++)
                 {
-                    tmp[j, i] = (byte)(state[j, i] ^ w[4 * round + i,j]);
+                    tmp[j, i] = (byte)(state[j, i] ^ w[4 * round,j]);
                 }
             }
 

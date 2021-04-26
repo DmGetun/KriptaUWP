@@ -194,7 +194,7 @@ namespace UWP.Алгоритмы
 
         public override string KeyView()
         {
-            return null;
+            return "";
         }
 
         public override string GenerateKey()

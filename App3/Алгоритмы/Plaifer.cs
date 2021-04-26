@@ -47,7 +47,26 @@ namespace UWP.Алгоритмы
 
                 plainText.Append(BigramSymbolsEncrypt(alf, i_index_1, i_index_2, j_index_1, j_index_2,-1));
             }
-            return plainText.ToString();
+            return FormatText(plainText.ToString());
+        }
+
+        private string FormatText(string v)
+        {
+            StringBuilder str = new StringBuilder(v);
+            for (int i = 0; i < str.Length; i++)
+            {
+                if (str[i] == 'Ф')
+                {
+                    if (i - 1 < 0) continue;
+                    if (i + 1 >= str.Length) continue;
+                    char temp = str[i - 1];
+                    if (temp == str[i + 1])
+                    {
+                        str.Remove(i, 1);
+                    }
+                }
+            }
+            return str.ToString();
         }
 
         /*

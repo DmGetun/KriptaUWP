@@ -69,6 +69,7 @@ namespace UWP.Алгоритмы
             string newSymbol = config.Key.ToUpper();
             string key = newSymbol + plainText;
             var keyAlf = Alphabet.GenerateKeyAlphabet(key, alf);
+            Array.Copy(keyAlf, 1, keyAlf, 0, keyAlf.Length - 1);
 
             StringBuilder cipherText = new StringBuilder();
             for (int i = 0; i < plainText.Length; i++)
@@ -91,7 +92,7 @@ namespace UWP.Алгоритмы
 
         public override string KeyView()
         {
-            return null;
+            return "";
         }
     }
 }

@@ -22,5 +22,19 @@ namespace UWP.Помошники
         {
             return string.Format("({0},{1})", X, Y);
         }
+
+        public static bool operator ==(Point p1, Point p2)
+        {
+            if (p1.X == p2.X && p1.Y == p2.Y)
+                return true;
+            return false;
+        }
+
+        public static bool operator !=(Point p1, Point p2)
+        {
+            if (p1.X != p2.X && p1.Y != p2.Y)
+                return true;
+            return false;
+        }
     }
 }

@@ -8,6 +8,7 @@ using UWP.Алгоритмы;
 using UWP.Помошники;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -115,6 +116,7 @@ namespace App3
         private string ReplaceTextBeforeEncrypt(string text)
         {
             text = text.Replace(" ", "ПРБЛ").Replace(",", "ЗПТ").Replace(".", "ТЧК").Replace("-","ТИРЕ");
+            text = text.Replace("\r\r","ДАБЛНОВСТР").Replace("\r", "НОВСТР");
             if (algoritm.Name == "Шифр Плейфера")
             {
                 text = text.Replace('Ъ', 'Ь').Replace('Й', 'И').Replace('Ё', 'Е');
@@ -123,7 +125,7 @@ namespace App3
             StringBuilder str = new StringBuilder();
             foreach (char s in text)
             {
-                if ((s >= 'А' && s <= 'Я') || (s >= 'а' && s <= 'я'))
+                if ((s >= 'А' && s <= 'Я') || (s >= 'а' && s <= 'я') || (s >= '0' && s <='9'))
                     str.Append(s);
             }
 
@@ -132,7 +134,7 @@ namespace App3
 
         private string ReplaceTextAfterDecrypt(string text)
         {
-            return text.Replace("ПРБЛ", " ").Replace("ЗПТ", ",").Replace("ТЧК", ".");
+            return text.Replace("ПРБЛ", " ").Replace("ЗПТ", ",").Replace("ТЧК", ".").Replace("ТИРЕ","-").Replace("ДАБЛНОВСТР","\r\r").Replace("НОВСТР","\r");
         }
 
         private void MainPage_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -220,6 +222,7 @@ namespace App3
         private void SetAlgorithm(string name)
         {
             algoritm = dictAlgorithm[name];
+            AlgName.Text = $"Текущий алгоритм шифрования: {name}";
             Reset();
         }
 
@@ -234,11 +237,11 @@ namespace App3
                 if (button == null) continue;
                 if (algoritm.Name.Equals(button.Name))
                 {
-                    //button.Background = new SolidColorBrush(Color.FromArgb(255, 250, 218, 221));
+                    button.Foreground = new SolidColorBrush(Color.FromArgb(255, 255, 255, 0));
                 }
                 else
                 {
-
+                    button.Foreground = new SolidColorBrush(Color.FromArgb(255, 255, 255, 255));
                 }
             }
         }
