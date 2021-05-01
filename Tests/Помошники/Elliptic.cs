@@ -128,11 +128,11 @@ namespace UWP.Помошники
         {
             uint pointCount = 0;
             List<BigInteger> squareY = new List<BigInteger>();
-            for(BigInteger y = 0; y <= p; y++)
+            for(BigInteger y = 0; y < p; y++)
             {
                 squareY.Add(Pow(y,2,p));
             }
-            for(BigInteger x = 0; x <= p; x++)
+            for(BigInteger x = 0; x < p; x++)
             {
                 BigInteger y = (BigInteger.Pow(x, 3) + a * x + b) % p;
                 if (squareY.IndexOf(y) != -1)

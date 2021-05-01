@@ -10,34 +10,36 @@ namespace UWP.Алгоритмы
 {
     class GammaGost28147 : Algorithm
     {
-        byte[][] table = new byte[8][] {
-        new byte[] {12, 4, 6, 2, 10, 5, 11, 9, 14, 8, 13, 7, 0, 3, 15, 1 },
-        new byte[] {6, 8, 2, 3, 9, 10, 5, 12, 1, 14, 4, 7, 11, 13, 0, 15 },
-        new byte[] {11, 3, 5, 8, 2, 15, 10, 13, 14, 1, 7, 4, 12, 9, 6, 0 },
-        new byte[] {12, 8, 2, 1, 13, 4, 15, 6, 7, 0, 10, 5, 3, 14, 9, 11 },
-        new byte[] {7, 15, 5, 10, 8, 1, 6, 13, 0, 9, 3, 14, 11, 4, 2, 12 },
-        new byte[] {5, 13, 15, 6, 9, 2, 12, 10, 11, 7, 8, 1, 4, 3, 14, 0 },
-        new byte[] {8, 14, 2, 5, 6, 9, 1, 12, 15, 4, 11, 0, 13, 10, 3, 7 },
-        new byte[] {1, 7, 14, 13, 0, 5, 8, 3, 4, 15, 10, 6, 9, 12, 11, 2 } };
-        public override string Name => "Гаммирование ГОСТ 28147-89";
+        private readonly byte[][] table =
+        {
+            //            0     1     2     3     4     5     6     7     8     9     A     B     C     D     E     F
+            new byte[] { 0x0C, 0x04, 0x06, 0x02, 0x0A, 0x05, 0x0B, 0x09, 0x0E, 0x08, 0x0D, 0x07, 0x00, 0x03, 0x0F, 0x01 },
+            new byte[] { 0x06, 0x08, 0x02, 0x03, 0x09, 0x0A, 0x05, 0x0C, 0x01, 0x0E, 0x04, 0x07, 0x0B, 0x0D, 0x00, 0x0F },
+            new byte[] { 0x0B, 0x03, 0x05, 0x08, 0x02, 0x0F, 0x0A, 0x0D, 0x0E, 0x01, 0x07, 0x04, 0x0C, 0x09, 0x06, 0x00 },
+            new byte[] { 0x0C, 0x08, 0x02, 0x01, 0x0D, 0x04, 0x0F, 0x06, 0x07, 0x00, 0x0A, 0x05, 0x03, 0x0E, 0x09, 0x0B },
+            new byte[] { 0x07, 0x0F, 0x05, 0x0A, 0x08, 0x01, 0x06, 0x0D, 0x00, 0x09, 0x03, 0x0E, 0x0B, 0x04, 0x02, 0x0C },
+            new byte[] { 0x05, 0x0D, 0x0F, 0x06, 0x09, 0x02, 0x0C, 0x0A, 0x0B, 0x07, 0x08, 0x01, 0x04, 0x03, 0x0E, 0x00 },
+            new byte[] { 0x08, 0x0E, 0x02, 0x05, 0x06, 0x09, 0x01, 0x0C, 0x0F, 0x04, 0x0B, 0x00, 0x0D, 0x0A, 0x03, 0x07 },
+            new byte[] { 0x01, 0x07, 0x0E, 0x0D, 0x00, 0x05, 0x08, 0x03, 0x04, 0x0F, 0x0A, 0x06, 0x09, 0x0C, 0x0B, 0x02 }
+        };
+        public override string Name => "Простая замена ГОСТ 28147";
 
         public override string DefaultKey => "1234567890ABCDEF";
 
         public override bool IsReplaceText => false;
 
+        private uint c1 = 0x_1010101;
+        private uint c2 = 0x_1010104;
+        private byte[] s = new byte[] { 0x12, 0x34, 0x56, 0x78, 0x00, 0x00,0x00,0x00 };
+
+        private string synhro = "1234567800000000";
+
         public byte[] EncryptBlocks { get; private set; }
         bool flagD = false;
 
         private string Key;
-
+        private uint[] _subKeys;
         private readonly int BLOCK_SIZE = 8;
-
-        private const uint C2 = 0x_1010101;
-        private const uint C1 = 0x_1010104;
-        private const uint s1 = 0x_1010104;
-        private const uint s2 = 0x_1010104;
-
-        private uint N1, N2, N3, N4;
 
         /*
             Проверка ключа на длину в 256 бит 
@@ -51,234 +53,160 @@ namespace UWP.Алгоритмы
             }
             return key;
         }
-
         /*
-            Функция расшифрования. 
-            Аналогична функции шифрования.
-        */
+            Функция расшифрования по входному тексту.
+            Конвертируем текст и ключ в массивы байт,
+            Разбиваем текст на блоки по 64 бита и передаем в функцию дешифрования блока
+            После дешифрования удаляем дополнение.
 
+        */
         public override string Decrypt(string cipherText, Config config)
         {
-            flagD = true;
-            string key = CheckKey(config.Key);
-            Key = key;
-            byte[] text = Encoding.Unicode.GetBytes(cipherText);
-            if (flagD == true && EncryptBlocks != null)
-            {
-                text = EncryptBlocks;
-                EncryptBlocks = null;
-                flagD = false;
-            }
-            byte[][] allBlocks = GiveAllBlocks(text);
-            uint[] keys = GenerateKeys(key);
-            N1 = s1;
-            N2 = s2;
-            byte[] block = new byte[BLOCK_SIZE];
-            byte[] plainBlocks = new byte[text.Length];
-            int len = text.Length / 8;
-            if (text.Length % 8 != 0) len++;
-            for (int i = 0; i < len; i++)
-            {
-                var syncro = GenerateSynhro(keys);
-                block = XOR(syncro, allBlocks[i]);
-                for (int j = 0; j < block.Length; j++)
-                    plainBlocks[8 * i + j] = block[j];
-            }
-
-            flagD = false;
-            return Encoding.Unicode.GetString(plainBlocks);
+            return null;
         }
 
         /*
-            Разбить текст на блоки.
-            Если можем записать полный блок, то пишем полный.
-            Иначе последний блок оставляем не полным.
+            Функция шифрования по входному тексту.
+            Проверяем ключ, переводим текст и ключ в массивы байт.
+            Дополняем блок до кратности 64.    
         */
-        private byte[][] GiveAllBlocks(byte[] text)
-        {
-            int len = text.Length / 8 + 1;
-            int j = 0,i = 0;
-            byte[][] res = new byte[len][];
-            for(; j < len; j++)
-            {
-                if(j * 8 + 8 < text.Length)
-                {
-                    res[j] = new byte[8];
-                    for(; i < j * 8 + 8; i++)
-                    {
-                        res[j][i % 8] = text[i];
-                    }
-                }
-                else
-                {
-                    res[j] = new byte[text.Length - (j * 8)];
-                    for(int l = 0;l < text.Length - (j * 8); l++)
-                    {
-                        res[j][l] = text[i++];
-                    }
-                }
-            }
-            return res;
-        }
-        /*
-            Операция XOR над массивом байт.
-            Складываем каждый байт входный массивом по модулю 2.
-        */
-        private byte[] XOR(byte[] syncro, byte[] block)
-        {
-            byte[] buffer = new byte[block.Length];
-            for(int i = 0; i < block.Length; i++)
-            {
-                buffer[i] = (byte)(syncro[i] ^ block[i]);
-            }
-            return buffer;
-        }
-
-        /*
-            Генерация гаммы.
-            Записываем значения из N1,N2 в массив байт,
-            полученный массив зашифровываем в режиме простой замены.
-            Полученный массив переписываем в N3,N4
-            Суммируем N3 и C2 по модулю 2^32
-            Суммируем N4 и C1 по модулю 2^32 - 1
-            Записываем N3 в N1, N4 в N2
-            Переводим N1 и N2 в массив байт.
-            Полученный массив шифруем в режиме простой замены
-        */
-
-        private byte[] GenerateSynhro(uint[] keys)
-        {
-            byte[] block = new byte[8];
-            Array.Copy(BitConverter.GetBytes(N1), 0, block, 0, 4);
-            Array.Copy(BitConverter.GetBytes(N2), 0, block, 4, 4);
-            byte[] result = SimpleReplacement(block, keys);
-            N3 = BitConverter.ToUInt32(result, 0);
-            N4 = BitConverter.ToUInt32(result, 4);
-            N3 = (uint)((N3 + C2) % Math.Pow(2, 32));
-            N4 = (uint)((N4 + C1) % (Math.Pow(2, 32) - 1));
-            N1 = N3;
-            N2 = N4;
-            Array.Copy(BitConverter.GetBytes(N1), 0, block, 0, 4);
-            Array.Copy(BitConverter.GetBytes(N2), 0, block, 4, 4);
-            return SimpleReplacement(block, keys);
-        }
-
-        /*
-            Функция шифрования.
-            Проверяем ключ, разбиваем текст на блоки.
-            Генерируем ключи (С 1 по 24 записываем K0...K7, с 25 по 32 записываем K7...K0)
-            Записываем синхропосылки в N1,N2
-            Генерируем гамму, складываем её по модулю 2 с блоком открытого текста
-            Добавляем к массиву зашифрованных байт
-        */
-
         public override string Encrypt(string plainText, Config config)
         {
-            string key = CheckKey(config.Key);
-            Key = key;
-            byte[] text = Encoding.Unicode.GetBytes(plainText);
-            byte[][] allBlocks = GiveAllBlocks(text);
-            uint[] keys = GenerateKeys(key);
-            N1 = s1;
-            N2 = s2;
-            byte[] block = new byte[BLOCK_SIZE];
-            int len = text.Length / 8;
-            if (text.Length % 8 != 0) len++;
-            byte[] cipherBlocks = new byte[text.Length];
-            for (int i = 0; i < len; i++)
-            {
-                var syncro = GenerateSynhro(keys);
-                block = XOR(syncro, allBlocks[i]);
-                for (int j = 0; j < block.Length; j++)
-                    cipherBlocks[8 * i + j] = block[j];
-            }
-            
+            return null;
+        }
 
-            EncryptBlocks = cipherBlocks;
+        private byte[] XOR(byte[] block, byte[] data)
+        {
+            byte[] res = new byte[8];
+            for (int i = 0; i < 8; i++)
+                res[i] = (byte)(block[i] ^ data[i]);
 
-            return Encoding.Unicode.GetString(cipherBlocks);
+            return res;
+        }
+
+        private static byte[] Split(string plaintext, int v)
+        {
+            string[] rez = new string[plaintext.Length / v];
+            int j = 0;
+            for (int i = 0; i < plaintext.Length; i += v)
+                rez[j++] = plaintext.Substring(i, v);
+
+            return rez.Select(i => Convert.ToByte(i, 16)).ToArray();
         }
 
         /*
-            Режим простой замены.
-            Разбиваем 64 битный массив на два 32 битных.
-            Суммируем N1 и ключ по модулю 2^32 в сумматоре CM1
-            Заменяем значение из CM1 по таблице замен
-            Сдвигаем результат циклическим сдвигом влево на 11
-            Полученное значение складываем с N2 по модулю 2 в сумматоре CM2
-            Записываем N1 в N2, CM2 в N1.
-            На последней итерации пишем CM2 N2
-        */
-        private byte[] SimpleReplacement(byte[] block, uint[] keys)
+   Вычисляем раундовые ключи.
+   Разбиваем входной массив байт длины 32 на 8 частей длиной 4 байта.
+*/
+        private void CalculateSubKeys(byte[] key)
         {
-            byte[] N1 = new byte[block.Length / 2];
-            byte[] N2 = new byte[block.Length / 2];
-            Array.Copy(block, 0, N1, 0, 4);
-            Array.Copy(block, 4, N2, 0, 4);
-
-            for (int i = 0; i < 32; i++)
-            {
-                uint CM1 = (uint)((BitConverter.ToUInt32(N1, 0) + keys[i]) % Math.Pow(2, 32));
-                byte[] K = Replfacement(CM1);
-                uint R = BitConverter.ToUInt32(K, 0);
-                R = (R << 11) | (R >> 21);
-                uint CM2 = R ^ BitConverter.ToUInt32(N2, 0);
-                if (i < 31)
-                {
-                    N2 = N1;
-                    N1 = BitConverter.GetBytes(CM2);
-                }
-                else
-                    N2 = BitConverter.GetBytes(CM2);
-            }
-
-            var output = new byte[8];
-
-            for (int i = 0; i < 4; i++)
-            {
-                output[i] = N1[i];
-                output[4 + i] = N2[i];
-            }
-
-            return output;
-        }
-
-        /*
-            Замена 32 битного блока по таблице
-            Каждый раз сдвигаем блок на 4 вправо,
-            полученный число используем как индекс в таблице замен.
-        */
-        private byte[] Replfacement(uint cM1)
-        {
-
-            uint result = 0;
+            byte[] keyR = new byte[key.Length];
+            uint[] subKeys = new uint[8];
+            Array.Copy(key, keyR, key.Length);
+            Array.Reverse(keyR);
             for (int i = 0; i < 8; i++)
             {
-                var temp = (byte)((cM1 >> (4 * i)) & 0x0f);
-                temp = table[i][temp];
-                result |= (UInt32)temp << (4 * i);
+                subKeys[i] = BitConverter.ToUInt32(keyR, i * 4);
             }
-            return BitConverter.GetBytes(result);
+            Array.Reverse(subKeys);
+            _subKeys = subKeys;
+        }
+        /*
+            Функция расшифрования блока и проверки на тестовых векторах.
+            Вычисляем раундовые ключи,
+            вычисляем XOR левой части блока и функции G правой части блока.
+            Меняем местами части.
+            В последней итерации производим те же вычисления, только не меняем части местами.
+        */
+        public byte[] Decrypt(byte[] data, byte[] key,byte[] synhro)
+        {
+            s = synhro;
+            CalculateSubKeys(key);
+            byte[] gamma = FullEnc(s);
+            Inc();
+            return XOR(gamma, data);
+        }
+        /*
+            Функция расшифрования блока и проверки на тестовых векторах.
+            Вычисляем раундовые ключи,
+            вычисляем XOR левой части блока и функции G правой части блока.
+            Меняем местами части.
+            В последней итерации производим те же вычисления, только не меняем части местами.
+            Код идентичен функции расшифрования за исключением прямого порядка ключей.
+        */
+        public byte[] Encrypt(byte[] data, byte[] key,byte[] synhro)
+        {
+            s = synhro;
+            CalculateSubKeys(key);
+            byte[] gamma = FullEnc(s);
+            Inc();
+            return XOR(gamma,data);
         }
 
-        private uint[] GenerateKeys(string key)
+        private void Inc()
         {
-            byte[] keys = Encoding.Unicode.GetBytes(key);
-            uint[] result = new uint[keys.Length];
-            for (int i = 0; i < 24; i++)
+            ulong t = BitConverter.ToUInt64(s, 0);
+            t += 1;
+            s = BitConverter.GetBytes(t);
+        }
+
+        private byte[] FullEnc(byte[] data)
+        {
+            byte[] dataR = new byte[data.Length];
+            Array.Copy(data, dataR, data.Length);
+            Array.Reverse(dataR);
+
+            uint a0 = BitConverter.ToUInt32(dataR, 0); // левые 32 бита
+            uint a1 = BitConverter.ToUInt32(dataR, 4); // правые 32 бита
+
+            byte[] result = new byte[8];
+            for (int i = 0; i < 31; i++)
             {
-                int index = (i * 4) % 32;
-                result[i] = BitConverter.ToUInt32(keys, index);
+                int keyIndex = (i < 24) ? i % 8 : 7 - (i % 8); // с 1 по 24 ключи повторяются, с 25 по 32 записаны в обратном порядке
+                uint round = a1 ^ funcG(a0, _subKeys[keyIndex]); // XOR левой части и преобразованной по раундовому ключу правой части
+
+                a1 = a0;
+                a0 = round; // меняем местами
             }
 
-            for (int i = 24; i < 32; i++)
-            {
-                result[i] = BitConverter.ToUInt32(keys, 28 - (i * 4) % 32);
-            }
+            a1 ^= funcG(a0, _subKeys[0]); // XOR левой и правой части без смены мест.
 
+            Array.Copy(BitConverter.GetBytes(a0), 0, result, 0, 4);
+            Array.Copy(BitConverter.GetBytes(a1), 0, result, 4, 4);
+
+            Array.Reverse(result);
             return result;
         }
 
+        /*
+   Сложение чисел по модулю 2^32,
+   Замена результата по таблице замен, циклический сдвиг влево на 11 бит
+*/
+        private uint funcG(uint a, uint k)
+        {
+            uint c = a + k;
+            uint tmp = funcT(c); // замена 32 битной последовательности по таблице замен
+            return (tmp << 11) | (tmp >> 21);
+        }
+        /*
+            Функция замены 4-битных последовательностей по таблице замен.
+            Сдвигаем 32 битную последовательность на n * 4 бит и берем 4 младших бита, 
+            затем по значению этих бит получаем значение по таблице замены.
+        */
+        private uint funcT(uint a)
+        {
+            uint res = 0;
+
+            for (int i = 0; i < 8; i++)
+            {
+                res ^= (uint)(table[i][a >> (4 * i) & 0b_1111] << (4 * i));
+            }
+
+            return res;
+        }
+        /*
+            Функция генерации рандомного ключа 
+        */
         public override string GenerateKey()
         {
             byte[] rez = new byte[32];

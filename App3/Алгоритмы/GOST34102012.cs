@@ -233,7 +233,28 @@ namespace UWP.Алгоритмы
 
         public override string GenerateKey()
         {
-            throw new NotImplementedException();
+            int a = 0, b = 0, p = 0, k = 0;
+            Point G = new Point(0, 0);
+            Random rand = new Random();
+            BigInteger value = 0;
+            do
+            {
+                a = rand.Next(1, 100);
+                b = rand.Next(1, 100);
+                p = rand.Next(1, 100);
+                value = (4 * BigInteger.Pow(a, 3) + 27 * BigInteger.Pow(b, 2)) % p;
+            }
+            while (value == 0);
+
+            Elliptic elliptic = new Elliptic(a, b, p);
+            k = rand.Next(1, 20);
+            do
+            {
+                int a_ = rand.Next(1, 100);
+                int b_ = rand.Next(1, 100);
+                G = new Point(a_, b_);
+            } while (!elliptic.IsGoodPoint(G));
+            return $"a={a}\rb={b}\rp={p}\rXa={k}\rG={G}";
         }
     }
 }

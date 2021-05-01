@@ -64,7 +64,12 @@ namespace UWP.Алгоритмы
 
         public override string GenerateKey()
         {
-            throw new NotImplementedException();
+            int n = 0, a = 0, Ka = 0;
+            Random rand = new Random();
+            n = rand.Next(50, 150);
+            a = rand.Next(2, n);
+            Ka = rand.Next(3, n - 1);
+            return $"n={n}\ra={a}\rKa={Ka}";
         }
 
         public override string KeyView()

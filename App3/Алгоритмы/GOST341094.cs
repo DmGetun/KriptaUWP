@@ -12,7 +12,7 @@ namespace UWP.Алгоритмы
 {
     class GOST341094 : Algorithm
     {
-        private BigInteger p,q,x,a;
+        private BigInteger p, q, x, a;
 
         public override string Name => "ГОСТ Р 34.10-94";
 
@@ -57,7 +57,7 @@ namespace UWP.Алгоритмы
 
             BigInteger z2 = ((q - r) * v) % q;
             if (z2 < 0) z2 += q;
-            BigInteger u1 = (Pow(a,z1,p) * Pow(y,z2,p)) % p;
+            BigInteger u1 = (Pow(a, z1, p) * Pow(y, z2, p)) % p;
             if (u1 < 0) u1 += p;
             BigInteger u = u1 % q;
             if (u < 0) u += q;
@@ -72,10 +72,10 @@ namespace UWP.Алгоритмы
         {
             cipherText = cipherText.Substring(cipherText.IndexOf(','));
             cipherText = cipherText.Replace("(", "").Replace(")", "");
-            string[] keys = cipherText.Split(',',StringSplitOptions.RemoveEmptyEntries);
+            string[] keys = cipherText.Split(',', StringSplitOptions.RemoveEmptyEntries);
             BigInteger number = 0;
             BigInteger[] numbers = new BigInteger[keys.Length];
-            for(int i = 0;i < keys.Length; i++)
+            for (int i = 0; i < keys.Length; i++)
             {
                 if (BigInteger.TryParse(keys[i], out number))
                     numbers[i] = number;
@@ -99,7 +99,7 @@ namespace UWP.Алгоритмы
             x = keys[2];
             CheckNumbers(p, q, x);
 
-            a = Calculate_a(p,q);
+            a = Calculate_a(p, q);
 
             Stribog stribog = new Stribog();
             BigInteger h = new BigInteger(stribog.GetHashMessage(plainText)) % q;
@@ -129,7 +129,7 @@ namespace UWP.Алгоритмы
                 throw new Error("Число p не простое");
             if (!IsTheNumberSimple(q))
                 throw new Error("Число q не простое");
-            if(x >= q)
+            if (x >= q)
                 throw new Error("Число x должно быть меньше q");
             if ((p - 1) % q != 0)
                 throw new Error("Число q не является сомножителем числа p -1");
@@ -195,7 +195,7 @@ namespace UWP.Алгоритмы
         {
             string[] keys = key.Split('\r');
             BigInteger[] result = new BigInteger[keys.Length];
-            for(int i = 0; i < keys.Length; i++)
+            for (int i = 0; i < keys.Length; i++)
             {
                 BigInteger number = 0;
                 if (BigInteger.TryParse(keys[i].Substring(keys[i].IndexOf('=') + 1), out number))
@@ -204,11 +204,39 @@ namespace UWP.Алгоритмы
             }
             return result;
         }
-        
+
         public override string GenerateKey()
         {
-            throw new NotImplementedException();
+            /*            Random rand = new Random();
+                        int p = 0, q = 0, x = 4;
+                        do
+                        {
+                            p = rand.Next(600, 2000);
+                            if (!IsTheNumberSimple(p)) continue;
+                            if (p - 1 <= 2) continue;
+                            q = CalculateQ(p);
+                        } while ((p - 1) % q != 0);
+                        x = rand.Next(2, q);
+
+                        return $"P={p}\rQ={q}\rx={x}";*/
+            return "P=31\rQ=5\rx=4";
         }
+
+        /*        private int CalculateQ(int p)
+                {
+                    List<int> som = new List<int>();
+                    for(int i = 0; i < p - 1; i++)
+                    {
+                        if (IsTheNumberSimple(i))
+                            som.Add(i);
+                    }
+
+                    som.Reverse();
+                    foreach (int item in som)
+                        if ((p - 1) % item == 0)
+                            return item;
+                    return 0;
+                }*/
 
         public override string KeyView()
         {

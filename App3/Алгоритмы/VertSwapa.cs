@@ -20,7 +20,6 @@ namespace UWP.Алгоритмы
         /*
             расшифровка шифра вертикальной перестановки
         */
-
         public override string Decrypt(string cipherText, Config config)
         {
             string key = CheckKey(config.Key.ToUpper());
@@ -31,74 +30,116 @@ namespace UWP.Алгоритмы
 
             char[,] table = new char[rows, cols];
 
-            string[] arr = GetColumnsSymbols(cipherText, key); // восстанавливаем колонки
-
+            int[] keys = GetKeyNumbers(key);
+            cipherText = RestoreSpace(cipherText,keys,rows,cols);
+            return cipherText;
+        }
+        private int[] GetKeyNumbers(string key)
+        {
+            int[] numbers = new int[key.Length];
             var alf = Alphabet.GenerateAlphabet();
-            var alf_f = alf.Values.ToArray<char>();
+            var alf_f = new string(alf.Values.ToArray<char>());
             StringBuilder str = new StringBuilder(key);
-            int j = 0;
             foreach (char s in alf_f) // восстнавливаем исходную таблицу, записывая колонки в соответствии с индексом символов ключа.
             {
                 while (str.ToString().IndexOf(s) != -1)
                 {
                     int index = str.ToString().IndexOf(s);
                     str[index] = '/';
-                    for (int i = 0; i < rows; i++)
-                    {
-                        table[i, index] = arr[j][i];
-                    }
-                    j++;
+                    numbers[index] = alf_f.IndexOf(s);
                 }
             }
-            string plainText = GetPlainText(table); // проходимся по таблице и формируем строку открытого текста.
-            return plainText.Replace("/", "");
+            return numbers;
         }
-
-        /*
-            Функция выписывания таблицы. Заполняет по 2 строки таблицы за раз.
-         */
-
-        private string GetPlainText(char[,] table)
+        private string RestoreSpace(string input, int[] key, int rows,int cols)
         {
-            int rows = table.GetLength(0);
-            int cols = table.GetLength(1);
+            int strLen = input.Length;
+            char[,] table = new char[rows, cols];
+            string[] temp = new string[rows * cols];
+            key = ReplaceKey(key);
+            int spaceCount = rows * cols - strLen;
+            int[] k = key;
+            int[] l = new int[key.Length];
+            int fullLen = 0;
+            for (int i = 0; i < key.Length; i++)
+                if (i < key.Length - spaceCount)
+                    l[i] = rows;
+                else
+                    l[i] = rows - 1;
+
             StringBuilder str = new StringBuilder();
-            for (int i = 0; i < rows; i++)
+            for (int i = 0; i < rows * cols; i++)
+                input += " ";
+            string res = string.Empty;
+            int start = 0;
+            List<int> indexKey = new List<int>(key);
+            if(rows % 2 == 1) // справа
             {
-                for (int j = 0; j < cols; j++)
-                {
-                    str.Append(table[i, j]);
-                }
-                i++;
-                if (i == rows) return str.ToString();
-                for (int j = cols - 1, k = cols * i; j >= 0; j--, k++)
-                {
-                    str.Append(table[i, j]);
-                }
+                Formtable(input, key, ref table, l, ref fullLen, indexKey);
             }
-            return str.ToString();
+            else
+            {
+                Array.Reverse(l);
+                Formtable(input, key, ref table, l, ref fullLen, indexKey);
+            }
+
+            return RestoreTable(table,key).Trim();
         }
-
-        /*
-            Функция восстановления колонок из шифртекста.
-            Берем по rows символов шифртекста и записываем в массив
-         */
-
-        private string[] GetColumnsSymbols(string cipherText, string key)
+        private void Formtable(string input, int[] key, ref char[,] table, int[] l, ref int fullLen, List<int> indexKey)
         {
-            StringBuilder str = new StringBuilder(cipherText);
-            int rows = CalculateSize(str.Length, key.Length).Item1;
-            while (str.Length % rows != 0)
+            int step = 0;
+            for (int i = 0; i < key.Length; i++)
             {
-                str.Append('/');
+                    step = indexKey.IndexOf(i);
+                    string row = input.Substring(fullLen, l[step]);
+                    fullLen += row.Length;
+                    AddRow(ref table, row, step);
             }
-            string[] rez = new string[str.Length / rows];
-            string text = str.ToString();
-            for (int i = 0, j = 0; i < text.Length; i += rows, j++)
+        }
+        private string RestoreTable(char[,] table, int[] key)
+        {
+            string res = string.Empty;
+
+            for (int i = 0; i < table.GetLength(0); i++)
             {
-                rez[j] = text.Substring(i, rows);
+                for (int j = 0; j < table.GetLength(1); j++)    
+                {
+                    if (i % 2 == 0)
+                        res += table[i, j];
+                    else
+                        res += table[i, table.GetLength(1) - j - 1];
+                }
             }
-            return rez;
+                    
+            return res;
+        }
+        private void AddRow(ref char[,] table, string row, int start)
+        {
+            for (int i = 0; i < table.GetLength(0); i++)
+            {
+                if (i >= row.Length)
+                {
+                    table[i, start] = ' ';
+                    continue;
+                }
+                table[i, start] = row[i];
+            }
+        }
+        private int[] ReplaceKey(int[] key)
+        {
+            int[] t = new int[key.Length];
+            List<int> a = new List<int>(key);
+            int j = 0;
+            for(int i = 0; i < 33; i++)
+            {
+                while (a.IndexOf(i) != -1)
+                {
+                    int index = a.IndexOf(i);
+                    t[index] = j++;
+                    a[index] = -2;
+                }
+            }
+            return t;
         }
 
         /*
@@ -108,7 +149,6 @@ namespace UWP.Алгоритмы
             Выписываем символы в одной колонке таблицы,
             порядок выписывания колонок определяем числовым значением ключа.
         */
-
         public override string Encrypt(string plainText, Config config)
         {
             string key = CheckKey(config.Key.ToUpper());
@@ -140,7 +180,7 @@ namespace UWP.Алгоритмы
                     }
                 }
             }
-            return encryptTable.ToString();
+            return encryptTable.ToString().Replace(" ","");
         }
 
         // записываем исходный текст в таблицу
@@ -158,7 +198,7 @@ namespace UWP.Алгоритмы
                     int index = i * cols + j;
                     if (index >= length)
                     {
-                        table[i, j] = 'Ф';
+                        table[i, j] = ' ';
                         continue;
                     }
                     char symbol = plainText[index];
@@ -170,7 +210,7 @@ namespace UWP.Алгоритмы
                 {
                     if (k >= length)
                     {
-                        table[i, j] = 'Ф';
+                        table[i, j] = ' ';
                         continue;
                     }
                     table[i, j] = plainText[k];

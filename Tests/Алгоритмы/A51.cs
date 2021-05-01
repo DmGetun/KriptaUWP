@@ -198,6 +198,7 @@ namespace UWP.Алгоритмы
             BitArray part = new BitArray(bitCount);
             for (int i = 0; i < bitCount; i++)
             {
+                Console.WriteLine($"Clock[{i}]:");
                 Clock();
                 part[i] = R1[18] ^ R2[21] ^ R3[22];
             }
@@ -211,6 +212,7 @@ namespace UWP.Алгоритмы
         */
         private void Clock()
         {
+            PrintR(R1, R2, R3);
             bool majority = Majority();
             if (R1[8] == majority)
                 ClockFull(R1, Registers.first);
@@ -221,9 +223,29 @@ namespace UWP.Алгоритмы
             if (R3[10] == majority)
                 ClockFull(R3, Registers.third);
         }
+
+        private void PrintR(BitArray r1, BitArray r2, BitArray r3)
+        {
+            BitArray[] arr = new BitArray[3];
+            arr[0] = r1;
+            arr[1] = r2;
+            arr[2] = r3;
+            int k = 1;
+            foreach (var a in arr)
+            {
+                StringBuilder str = new StringBuilder();
+                for (int i = a.Count - 1; i >= 0; i--)
+                {
+                    str.Append(a[i] ? '1' : '0');
+                }
+                Console.WriteLine($"R{k}: {str}");
+                k++;
+            }
+        }
+
         /*
-            Функция сдвига всех регистров без учета мажоритарной функции. 
-        */
+   Функция сдвига всех регистров без учета мажоритарной функции. 
+*/
         private void ClockAll()
         {
             R1 = ClockFull(R1, Registers.first);

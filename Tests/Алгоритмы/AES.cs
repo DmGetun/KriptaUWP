@@ -24,7 +24,7 @@ namespace UWP.Алгоритмы
 
         private static byte[] Sbox, InvSbox;
         private static byte[][] Rcon;
-        byte[,] w;
+        byte[][] w;
         byte[] Key;
         private bool flagD = false;
         private byte[] encrypt;
@@ -54,59 +54,91 @@ namespace UWP.Алгоритмы
         {
             flagD = true;
             string _key = CheckKey(config.Key);
-            byte[] key = Encoding.Unicode.GetBytes(_key);
-            byte[] text = Encoding.Unicode.GetBytes(cipherText);
-            if (flagD == true && encrypt != null)
-            {
-                text = encrypt;
-                encrypt = null;
-                flagD = false;
-            }
+            string plain = "69c4e0d86a7b0430d8cdb78070b4c55a";
+            string key_ = "000102030405060708090a0b0c0d0e0f";
+
+            byte[] text = Split(plain, 2);
+            byte[] key = Split(key_, 2);
 
             Sbox = Tables.AES_Sbox;
             InvSbox = Tables.AES_InvSbox;
             Rcon = Tables.Rcon;
 
-            byte[,] keys = GenerateSubKeys(key);
+            byte[][] keys = GenerateSubKeys(key);
             w = GenerateWordKeys(keys);
-            byte[][] blocks = GiveAllBlocks(text);
 
-            byte[] plainText = new byte[blocks.Length * 16];
-            for (int i = 0; i < blocks.Length; i++)
+            byte[] plainText = new byte[text.Length];
+            Parallel.For(0, text.Length / BLOCK_SIZE, i =>
             {
-                byte[] block = DecryptBlock(blocks[i]);
-                Array.Copy(block, 0, plainText, i * block.Length, block.Length);
-            }
-            plainText = ClearBlocks(plainText);
-            return Encoding.Unicode.GetString(plainText);
+                byte[] block = new byte[BLOCK_SIZE];
+                Array.Copy(text, i * BLOCK_SIZE, block, 0, BLOCK_SIZE);
+                Array.Copy(DecryptBlock(block), 0, plainText, i * block.Length, block.Length);
+            });
+            return BitConverter.ToString(plainText);
         }
         /*
-            Фукнция расшифрования блока.
-            
+            Фукнция расшифрования блока.    
         */
         private byte[] DecryptBlock(byte[] inp)
         {
             byte[] temp = new byte[inp.Length];
 
-            byte[,] state = new byte[4, Nb];
-            for (int i = 0; i < inp.Length; i++)
-                state[i / 4, i % 4] = inp[i % 4 * 4 + i / 4];
+            byte[][] state = new byte[4][];
+            for (int i = 0; i < 4; i++)
+            {
+                state[i] = new byte[4];
+            }
+            for (int i = 0; i < 4; i++)
+            {
+                for (int j = 0; j < 4; j++)
+                {
+                    state[j][i] = inp[4 * i + j];
+                }
+            }
+            Console.Write($"round[0].input: ");
+            PrintState(state);
 
             state = AddRoundKey(state, w, Nr);
+            Console.Write($"round[0].k_sch: ");
+            PrintState(state);
+
             for (int i = Nr - 1; i >= 1; i--)
             {
-                state = InvSubBytes(state);
                 state = InvShiftRows(state);
+                Console.Write($"round[{i}].s_row: ");
+                PrintState(state);
+
+                state = InvSubBytes(state);
+                Console.Write($"round[{i}].s_box: ");
+                PrintState(state);
+
                 state = AddRoundKey(state, w, i);
+                Console.Write($"round[{i}].add: ");
+                PrintState(state);
+
                 state = InvMixColumns(state);
+                Console.Write($"round[{i}].Mix: ");
+                PrintState(state);
             }
             state = InvSubBytes(state);
+            Console.Write($"round[10].s_box: ");
+            PrintState(state);
+
             state = InvShiftRows(state);
+            Console.Write($"round[10].s_row: ");
+            PrintState(state);
+
             state = AddRoundKey(state, w, 0);
+            Console.Write($"round[10].add: ");
+            PrintState(state);
 
-            for (int i = 0; i < temp.Length; i++)
-                temp[i % 4 * 4 + i / 4] = state[i / 4, i % 4];
-
+            for (int i = 0; i < 4; i++)
+            {
+                for (int j = 0; j < 4; j++)
+                {
+                    temp[i * 4 + j] = state[j][i];
+                }
+            }
             return temp;
         }
 
@@ -115,7 +147,7 @@ namespace UWP.Алгоритмы
             Config config = new Config { Key = Encoding.Unicode.GetString(key) };
             string text = Encoding.Unicode.GetString(plainText);
 
-            return Encoding.Unicode.GetBytes(Encrypt(text, config));
+            return Split(Encrypt(text, config).Replace("-",""),2);
         }
 
         public byte[] Decrypt(byte[] plainText, byte[] key)
@@ -123,179 +155,210 @@ namespace UWP.Алгоритмы
             Config config = new Config { Key = Encoding.Unicode.GetString(key) };
             string text = Encoding.Unicode.GetString(plainText);
 
-            return Encoding.Unicode.GetBytes(Encrypt(text, config));
+            return Split(Decrypt(text, config).Replace("-", ""), 2);
         }
         public override string Encrypt(string plainText, Config config)
         {
-            string _key = CheckKey(config.Key);
-            byte[] key = Encoding.Unicode.GetBytes(_key);
-            byte[] text = Encoding.Unicode.GetBytes(plainText);
-            //text = DopBlock(text);
+            //string plain = "32 43 f6 a8 88 5a 30 8d 31 31 98 a2 e0 37 07 34".Replace(" ", "");
+            //string key_ = "2b 7e 15 16 28 ae d2 a6 ab f7 15 88 09 cf 4f 3c".Replace(" ","");
+            string plain = "00112233445566778899aabbccddeeff";
+            string key_ = "000102030405060708090a0b0c0d0e0f";
+
+            byte[] key = Split(key_,2);
+            Nk = 4;
+            Nr = 10;
+            byte[] text = Split(plain,2);
             Sbox = Tables.AES_Sbox;
             InvSbox = Tables.AES_InvSbox;
             Rcon = Tables.Rcon;
 
-            byte[,] keys = GenerateSubKeys(key);
+            byte[][] keys = GenerateSubKeys(key);
             w = GenerateWordKeys(keys);
-            byte[][] blocks = GiveAllBlocks(text);
 
-            byte[] cipherText = new byte[blocks.Length * 16];
-            for(int i = 0; i < blocks.Length; i++)
+            byte[] cipherText = new byte[text.Length];
+            Parallel.For(0, text.Length / BLOCK_SIZE, i =>
             {
-                byte[] block = EncryptBlock(blocks[i]);
-                Array.Copy(block, 0, cipherText, i * block.Length, block.Length);
-            }
+                byte[] block = new byte[BLOCK_SIZE];
+                Array.Copy(text, i * BLOCK_SIZE, block, 0, BLOCK_SIZE);
+                Array.Copy(EncryptBlock(block), 0, cipherText, i * block.Length, block.Length);
+            });
             flagD = false;
             encrypt = cipherText;
-            return Encoding.Unicode.GetString(cipherText);
-        }
-
-        private byte[] ClearBlocks(byte[] cipherBlocks)
-        {
-            byte[] result = new byte[1];
-            for (int i = cipherBlocks.Length - 1; i > 0; i--)
-            {
-                if (cipherBlocks[i] == 128)
-                {
-                    result = new byte[i];
-                    Array.Copy(cipherBlocks, 0, result, 0, result.Length);
-                    break;
-                }
-            }
-            return result;
-        }
-
-        private byte[] DopBlock(byte[] text)
-        {
-            byte te = 0x_80;
-            int len = text.Length;
-            int countBlock = len / BLOCK_SIZE;
-            if (len % BLOCK_SIZE != 0)
-                countBlock++;
-            if (len % BLOCK_SIZE == 0)
-                countBlock++;
-            byte[] result = new byte[countBlock * BLOCK_SIZE];
-            int i = 0;
-            for (; i < countBlock * BLOCK_SIZE; i++)
-            {
-                if (i == len)
-                {
-                    result[i++] = 0x_80;
-                    break;
-                }
-                result[i] = text[i];
-            }
-            for (; i < countBlock * BLOCK_SIZE; i++)
-            {
-                result[i] = 0x_00;
-            }
-            return result;
+            return BitConverter.ToString(cipherText);
         }
 
         private byte[] EncryptBlock(byte[] inp)
         {
             byte[] temp = new byte[inp.Length];
 
-            byte[,] state = new byte[4, Nb];
-            for (int i = 0; i < inp.Length; i++)
-                state[i / 4, i % 4] = inp[i % 4 * 4 + i / 4];
+            byte[][] state = new byte[4][];
+            for (int i = 0; i < 4; i++)
+                state[i] = new byte[4];
+            for (int i = 0; i < 4; i++)
+            {
+                for (int j = 0; j < 4; j++)
+                {
+                    state[j][i] = inp[4 * i + j];
+                }
+            }
+            Console.Write($"round[0].input: ");
+            PrintState(state);
 
             state = AddRoundKey(state, w, 0);
-            for(int i = 1; i < Nr; i++)
+            Console.Write($"round[0].k_sch: ");
+            PrintState(state);
+
+            for (int i = 1; i < Nr; i++)
             {
                 state = SubBytes(state);
-                state = ShiftRows(state);
-                state = MixColumns(state);
-                state = AddRoundKey(state, w, i);
-            }
-            state = SubBytes(state);
-            state = ShiftRows(state);
-            state = AddRoundKey(state, w, Nr);
+                Console.Write($"round[{i}].subBytes: ");
+                PrintState(state);
 
-            for (int i = 0; i < temp.Length; i++)
-                temp[i % 4 * 4 + i / 4] = state[i / 4, i % 4];
+                state = ShiftRows(state);
+                Console.Write($"round[{i}].ShiftRows: ");
+                PrintState(state);
+
+                state = MixColumns(state);
+                Console.Write($"round[{i}].MixColumns: ");
+                PrintState(state);
+
+                state = AddRoundKey(state, w, i);
+                Console.Write($"round[{i}].AddRoundKey: ");
+                PrintState(state);
+            }
+            Console.Write("round[10].SubBytes: ");
+            state = SubBytes(state);
+            PrintState(state);
+
+            Console.Write("round[10].ShiftRows: ");
+            state = ShiftRows(state);
+            PrintState(state);
+
+            Console.Write("round[10].AddRoundKey: ");
+            state = AddRoundKey(state, w, Nr);
+            PrintState(state);
+
+            for (int i = 0; i < 4; i++)
+            {
+                for (int j = 0; j < 4; j++)
+                {
+                    temp[i * 4 + j] = state[j][i];
+                }
+            }
 
             return temp;
         }
 
-        private byte[,] SubBytes(byte[,] state)
+        private static void PrintKeys(byte[] keys)
         {
-            byte[,] tmp = new byte[4, 4];
-            for (int row = 0; row < 4; row++)
-                for (int col = 0; col < Nb; col++)
-                    tmp[row, col] = (byte)(Sbox[(state[row, col] & 0x000000ff)] & 0xff);
-
-            return tmp;
+            Console.WriteLine(BitConverter.ToString(keys));
         }
 
-        private byte[,] InvSubBytes(byte[,] state)
+        private void PrintState(byte[][] state)
         {
-            for (int row = 0; row < 4; row++)
-                for (int col = 0; col < Nb; col++)
-                    state[row, col] = (byte)(InvSbox[(state[row, col] & 0x000000ff)] & 0xff);
+            byte[] temp = new byte[state.Length * 4];
+            for (int i = 0; i < 4; i++)
+                for (int j = 0; j < 4; j++)
+                    temp[4 * i + j] = state[j][i];
 
-            return state;
+            Console.WriteLine(BitConverter.ToString(temp));
         }
 
-        private byte[,] ShiftRows(byte[,] state)
+        private byte[] SubWord(byte[] state)
         {
+            return state.Select(i => Sbox[i]).ToArray();
+        }
 
-            byte[] t = new byte[4];
-            for (int r = 1; r < 4; r++)
+        private byte[][] SubBytes(byte[][] state)
+        {
+            byte[][] temp = new byte[4][];
+            for (int row = 0; row < 4; row++)
             {
-                for (int c = 0; c < Nb; c++)
-                    t[c] = state[r, (c + r) % Nb];
-                for (int c = 0; c < Nb; c++)
-                    state[r, c] = t[c];
+                temp[row] = new byte[Nb];
+                for (int col = 0; col < Nb; col++)
+                    temp[row][col] = Sbox[state[row][col]];
             }
 
-            return state;
+            return temp;
         }
 
-        private byte[,] InvShiftRows(byte[,] state)
+        private byte[][] InvSubBytes(byte[][] state)
         {
-            byte[] t = new byte[4];
-            for (int r = 1; r < 4; r++)
+            byte[][] temp = new byte[4][];
+            for (int row = 0; row < 4; row++)
             {
-                for (int c = 0; c < Nb; c++)
-                    t[(c + r) % Nb] = state[r, c];
-                for (int c = 0; c < Nb; c++)
-                    state[r, c] = t[c];
+                temp[row] = new byte[Nb];
+                for (int col = 0; col < Nb; col++)
+                    temp[row][col] = InvSbox[state[row][col]];
             }
-            return state;
+
+            return temp;
         }
 
-        private byte[,] InvMixColumns(byte[,] s)
+        private byte[][] ShiftRows(byte[][] state)
+        {
+
+            byte[][] t = new byte[4][];
+
+            for (int r = 0; r < 4; r++)
+            {
+                byte[] row = state[r];
+                row = row.Skip(r).Concat(row.Take(r)).ToArray();
+                t[r] = row;
+            }
+            return t;
+        }
+
+        private byte[][] InvShiftRows(byte[][] state)
+        {
+            byte[][] t = new byte[4][];
+            
+            for (int r = 0; r < 4; r++)
+            {
+                byte[] row = state[r];
+                row = row.Skip(4 - r).Concat(row.Take(r + 4)).ToArray();
+                t[r] = row;
+            }
+            return t;
+        }
+
+        private byte[][] MulKef = new byte[][]
+        {
+            new byte[] {0x_02,0x_03,0x_01,0x_01},
+            new byte[] {0x_01,0x_02,0x_03,0x_01},
+            new byte[] {0x_01,0x_01,0x_02,0x_03},
+            new byte[] {0x_03,0x_01,0x_01,0x_02}
+        };
+
+        private byte[][] InvMixColumns(byte[][] s)
         {
             int[] sp = new int[4];
             byte b02 = (byte)0x0e, b03 = (byte)0x0b, b04 = (byte)0x0d, b05 = (byte)0x09;
             for (int c = 0; c < 4; c++)
             {
-                sp[0] = FFMul(b02, s[0, c]) ^ FFMul(b03, s[1, c]) ^ FFMul(b04, s[2, c]) ^ FFMul(b05, s[3, c]);
-                sp[1] = FFMul(b05, s[0, c]) ^ FFMul(b02, s[1, c]) ^ FFMul(b03, s[2, c]) ^ FFMul(b04, s[3, c]);
-                sp[2] = FFMul(b04, s[0, c]) ^ FFMul(b05, s[1, c]) ^ FFMul(b02, s[2, c]) ^ FFMul(b03, s[3, c]);
-                sp[3] = FFMul(b03, s[0, c]) ^ FFMul(b04, s[1, c]) ^ FFMul(b05, s[2, c]) ^ FFMul(b02, s[3, c]);
+                sp[0] = FFMul(b02, s[0][c]) ^ FFMul(b03, s[1][c]) ^ FFMul(b04, s[2][c]) ^ FFMul(b05, s[3][c]);
+                sp[1] = FFMul(b05, s[0][c]) ^ FFMul(b02, s[1][c]) ^ FFMul(b03, s[2][c]) ^ FFMul(b04, s[3][c]);
+                sp[2] = FFMul(b04, s[0][c]) ^ FFMul(b05, s[1][c]) ^ FFMul(b02, s[2][c]) ^ FFMul(b03, s[3][c]);
+                sp[3] = FFMul(b03, s[0][c]) ^ FFMul(b04, s[1][c]) ^ FFMul(b05, s[2][c]) ^ FFMul(b02, s[3][c]);
                 for (int i = 0; i < 4; i++)
-                    s[i, c] = (byte)(sp[i]);
+                    s[i][c] = (byte)(sp[i]);
             }
-
             return s;
         }
 
-        private byte[,] MixColumns(byte[,] s)
+        private byte[][] MixColumns(byte[][] s)
         {
-            int[] sp = new int[4];
-            byte b02 = (byte)0x02, b03 = (byte)0x03;
+            byte[][] res = new byte[4][];
+            byte[] sp = new byte[4];
             for (int c = 0; c < 4; c++)
             {
-                sp[0] = FFMul(b02, s[0, c]) ^ FFMul(b03, s[1, c]) ^ s[2, c] ^ s[3, c];
-                sp[1] = s[0, c] ^ FFMul(b02, s[1, c]) ^ FFMul(b03, s[2, c]) ^ s[3, c];
-                sp[2] = s[0, c] ^ s[1, c] ^ FFMul(b02, s[2, c]) ^ FFMul(b03, s[3, c]);
-                sp[3] = FFMul(b03, s[0, c]) ^ s[1, c] ^ s[2, c] ^ FFMul(b02, s[3, c]);
+                sp[0] = (byte)(FFMul(MulKef[0][0], s[0][c]) ^ FFMul(MulKef[0][1], s[1][c]) ^ FFMul(MulKef[0][2], s[2][c]) ^ FFMul(MulKef[0][3], s[3][c]));
+                sp[1] = (byte)(FFMul(MulKef[1][0], s[0][c]) ^ FFMul(MulKef[1][1], s[1][c]) ^ FFMul(MulKef[1][2], s[2][c]) ^ FFMul(MulKef[1][3], s[3][c]));
+                sp[2] = (byte)(FFMul(MulKef[2][0], s[0][c]) ^ FFMul(MulKef[2][1], s[1][c]) ^ FFMul(MulKef[2][2], s[2][c]) ^ FFMul(MulKef[2][3], s[3][c]));
+                sp[3] = (byte)(FFMul(MulKef[3][0], s[0][c]) ^ FFMul(MulKef[3][1], s[1][c]) ^ FFMul(MulKef[3][2], s[2][c]) ^ FFMul(MulKef[3][3], s[3][c]));
                 for (int i = 0; i < 4; i++)
-                    s[i, c] = (byte)(sp[i]);
+                    s[i][c] = sp[i];
             }
-
             return s;
         }
 
@@ -315,113 +378,77 @@ namespace UWP.Алгоритмы
             return r;
         }
 
-        private byte[,] GenerateWordKeys(byte[,] keys)
+        private byte[][] GenerateWordKeys(byte[][] keys)
         {
-            byte[,] w = new byte[44,Nk];
-            for(int i = 0; i < Nk; i++)
-                for(int j = 0; j < Nk; j++)
-                {
-                    w[i, j] = keys[j, i]; 
-                }
-            
-            for(int i = 4; i < 44;i++)
+            byte[][] w = new byte[44][];
+            for(int i = 0; i < 4; i++)
+            {
+                byte[] temp = new byte[4];
                 for(int j = 0; j < 4; j++)
                 {
-                    byte[] temp = new byte[4];
-                    for (int k = 0; k < 4; k++) temp[j] = w[i - 1, k];
-
-                    if (i % 4 == 0)
-                    {
-                        temp = SubWord(RotWord(temp));
-                        for (int l = 0; l < 4; l++)
-                        {
-                            temp[l] = (byte)(temp[l] ^ (Rcon[i / 4][l] & 0xff));
-                            w[i, l] = temp[l];
-                        }
-
-                    }
-                    else
-                    {
-                        for(int l = 0; l < 4; l++)
-                        {
-                            w[i, l] = (byte)(w[i - 1, l] ^ w[i - 4, l]);
-                        }
-                    }
+                    temp[j] = keys[j][i];
                 }
-
-            return w;
-
-
-        }
-        private static byte[] RotWord(byte[] input)
-        {
-            byte[] tmp = new byte[input.Length];
-            byte t = input[0];
-            for (int i = 0; i < 3; i++)
-                tmp[i] = input[i + 1];
-            tmp[3] = t;
-
-            return tmp;
-        }
-        private static byte[] SubWord(byte[] inp)
-        {
-            byte[] tmp = new byte[inp.Length];
-
-            for (int i = 0; i < tmp.Length; i++)
-                tmp[i] = (byte)(Sbox[inp[i] & 0x000000ff] & 0xff);
-
-            return tmp;
-        }
-
-        private byte[][] GiveAllBlocks(byte[] text)
-        {
-            int len = text.Length / BLOCK_SIZE + 1;
-            int j = 0, i = 0;
-            byte[][] res = new byte[len][];
-            for (; j < len; j++)
+                w[i] = temp;
+            }
+            
+            for(int i = 4; i < 44; i++)
             {
-                if (j * BLOCK_SIZE + BLOCK_SIZE < text.Length)
+                byte[] temp = new byte[4];
+                if(i % 4 == 0)
                 {
-                    res[j] = new byte[BLOCK_SIZE];
-                    for (; i < j * BLOCK_SIZE + BLOCK_SIZE; i++)
-                    {
-                        res[j][i % BLOCK_SIZE] = text[i];
-                    }
+                    
+                    w[i] = XOR(SubWord(RotWord(w[i - 1])), Rcon[i / 4]);
+                    w[i] = XOR(w[i], w[i - 4]);
                 }
                 else
                 {
-                    res[j] = new byte[text.Length - (j * BLOCK_SIZE)];
-                    for (int l = 0; l < text.Length - (j * BLOCK_SIZE); l++)
-                    {
-                        res[j][l] = text[i++];
-                    }
+                    w[i] = XOR(w[i - 4], w[i - 1]);
                 }
+            }
+            return w;
+        }
+
+        private byte[] XOR(byte[] vs1, byte[] vs2)
+        {
+            byte[] res = new byte[4];
+            for(int i = 0; i < 4; i++)
+            {
+                res[i] = (byte)(vs1[i] ^ vs2[i]);
             }
             return res;
         }
 
-        private byte[,] GenerateSubKeys(byte[] key)
+        private static byte[] RotWord(byte[] input)
         {
-            byte[,] rez = new byte[4, 4];
+            PrintKeys(input.Skip(1).Concat(input.Take(1)).ToArray());
+            return input.Skip(1).Concat(input.Take(1)).ToArray();
+        }
+
+        private byte[][] GenerateSubKeys(byte[] key)
+        {
+            byte[][] rez = new byte[4][];
+            for (int i = 0; i < 4; i++)
+                rez[i] = new byte[4];
             for (int i = 0; i < 4; i++)
             {
                 for (int j = 0; j < 4; j++)
                 {
-                    rez[i,j] = key[i + 4 * j];
+                    rez[j][i] = key[4 * i + j];
                 }
             }
             return rez;
         }
 
-        private byte[,] AddRoundKey(byte[,] state, byte[,] w, int round)
+        private byte[][] AddRoundKey(byte[][] state, byte[][] w, int round)
         {
-            byte[,] tmp = new byte[Nb, Nb];
-            for(int i = 0; i < Nb; i++)
+            byte[][] tmp = new byte[4][];
+            for (int i = 0; i < Nb; i++)
+                tmp[i] = new byte[4];
+
+            for (int c = 0; c < Nb; c++)
             {
-                for(int j = 0; j < Nb; j++)
-                {
-                    tmp[j, i] = (byte)(state[j, i] ^ w[4 * round,j]);
-                }
+                for (int l = 0; l < 4; l++)
+                    tmp[l][c] = (byte)(state[l][c] ^ w[round * Nb + c][l]);
             }
 
             return tmp;
@@ -442,6 +469,16 @@ namespace UWP.Алгоритмы
                 rez.Append(bit);
             }
             return rez.ToString();
+        }
+
+        private static byte[] Split(string plaintext, int v)
+        {
+            string[] rez = new string[plaintext.Length / 2];
+            int j = 0;
+            for (int i = 0; i < plaintext.Length; i += 2)
+                rez[j++] = plaintext.Substring(i, 2);
+
+            return rez.Select(i => Convert.ToByte(i, 16)).ToArray();
         }
     }
 }

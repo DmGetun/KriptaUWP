@@ -30,13 +30,13 @@
     <AppXManifest Include="C:\Users\Admin\source\repos\App3\App3\bin\x86\Debug\Core\AppxManifest.xml">
       <PackagePath>AppxManifest.xml</PackagePath>
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
-      <Modified>2021-04-26T12:52:14.138</Modified>
+      <Modified>2021-04-30T23:48:55.661</Modified>
     </AppXManifest>
   </ItemGroup>
   <ItemGroup>
     <AppxPackagedFile Include="C:\Users\Admin\source\repos\App3\App3\bin\x86\Debug\App3.exe">
       <PackagePath>entrypoint\App3.exe</PackagePath>
-      <Modified>2021-04-26T12:52:13.655</Modified>
+      <Modified>2021-04-30T23:48:54.607</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Program Files %28x86%29\Microsoft SDKs\UWPNuGetPackages\runtime.win10-x86.microsoft.netcore.universalwindowsplatform\6.2.11\runtimes\win10-x86\lib\uap10.0.15138\System.Runtime.dll">
       <PackagePath>System.Runtime.dll</PackagePath>
@@ -90,11 +90,11 @@
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Admin\source\repos\App3\App3\bin\x86\Debug\App.xbf">
       <PackagePath>App.xbf</PackagePath>
-      <Modified>2021-04-26T12:52:13.477</Modified>
+      <Modified>2021-04-30T18:31:26.347</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Admin\source\repos\App3\App3\bin\x86\Debug\MainPage.xbf">
       <PackagePath>MainPage.xbf</PackagePath>
-      <Modified>2021-04-26T12:52:13.477</Modified>
+      <Modified>2021-04-30T18:31:26.347</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Program Files %28x86%29\Windows Kits\10\UnionMetadata\10.0.19041.0\Windows.winmd">
       <PackagePath>WinMetadata\Windows.winmd</PackagePath>
@@ -102,11 +102,11 @@
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Admin\source\repos\App3\App3\bin\x86\Debug\resources.pri">
       <PackagePath>resources.pri</PackagePath>
-      <Modified>2021-04-26T11:30:15.357</Modified>
+      <Modified>2021-04-28T22:36:31.517</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Admin\source\repos\App3\App3\bin\x86\Debug\Core\App3.exe">
       <PackagePath>App3.exe</PackagePath>
-      <Modified>2021-04-26T12:52:14.134</Modified>
+      <Modified>2021-04-30T23:48:55.651</Modified>
     </AppxPackagedFile>
   </ItemGroup>
   <ItemGroup>

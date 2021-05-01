@@ -115,7 +115,16 @@ namespace UWP.Алгоритмы
 
         public override string GenerateKey()
         {
-            throw new NotImplementedException();
+            Random rand = new Random();
+            int p = 0, g = 0, x = 0;
+            do
+            {
+                p = rand.Next(2, 1000);
+            } while (!IsTheNumberSimple(p));
+            g = rand.Next(2, p);
+            x = rand.Next(2, p - 1);
+
+            return $"p={p}\rg={g}\rx={x}";
         }
 
         public override string KeyView()
