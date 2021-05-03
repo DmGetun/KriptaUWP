@@ -11,13 +11,15 @@ namespace UWP.Алгоритмы
     {
         private int n,a,Ya,Yb;
 
-        public override string Name => "Обмен ключами Диффи-Хеллман";
+        public override string Name => "Диффи-Хеллман";
 
         public override string DefaultKey => "n=34\ra=15\rKa=10";
 
         public override bool IsReplaceText => true;
 
         public int K2 { get; private set; }
+
+        public override string Group => "Обмен ключами";
 
         public override string CheckKey(string key)
         {

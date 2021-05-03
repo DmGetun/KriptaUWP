@@ -15,11 +15,18 @@ namespace UWP.Алгоритмы
 
         public override bool IsReplaceText => true;
 
+        public override string Group => "Шифры однозначной замены";
+
         public override string CheckKey(string key)
         {
             throw new NotImplementedException();
         }
 
+        /*
+            Функция расшифрования.
+            Генерируем словарь, состоящий из буквы и её индексов в таблице 6 на 6.
+            Для числа шифртекста получаем букву, беря её индекс в таблице
+        */
         public override string Decrypt(string cipherText, Config config)
         {
             var alf = Alphabet.PolibiiAlphabet();
@@ -33,7 +40,11 @@ namespace UWP.Алгоритмы
             }
             return str.ToString();
         }
-
+        /*
+            Функция шифрования.
+            Генерируем словарь, состоящий из буквы и её индексов в таблице 6 на 6.
+            Для буквы текста получаем число, соответствующее номеру строки и столбца в таблице.
+        */
         public override string Encrypt(string plainText, Config config)
         {
             var alf = Alphabet.PolibiiAlphabet();

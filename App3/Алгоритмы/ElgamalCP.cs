@@ -16,6 +16,8 @@ namespace UWP.Алгоритмы
 
         public override bool IsReplaceText => true;
 
+        public override string Group => "Цифровые подписи";
+
         BigInteger p, g, Y,x;
 
         public override string CheckKey(string key)

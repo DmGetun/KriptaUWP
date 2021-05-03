@@ -21,6 +21,8 @@ namespace UWP.Алгоритмы
         public int Cu { get; private set; }
         public Point Du { get; private set; }
 
+        public override string Group => "Асимметричные шифры";
+
         public override string CheckKey(string key)
         {
             throw new NotImplementedException();

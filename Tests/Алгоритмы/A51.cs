@@ -50,9 +50,6 @@ namespace UWP.Алгоритмы
             Расшифрование A5/1
             Функция аналогична функции шифрования.
          */
-
-
-
         public override string Decrypt(string cipherText, Config config)
         {
             flagD = true;
@@ -65,7 +62,6 @@ namespace UWP.Алгоритмы
             Для каждого фрейма генерируем гамму, складываем биты текста с битами гаммы по модулю 2,
             получившийся массив бит конвертируем в строку.
         */
-
         public byte[] Encrypt(byte[] text, byte[] key)
         {
             string plain = Encoding.Unicode.GetString(text);
@@ -73,7 +69,6 @@ namespace UWP.Алгоритмы
             Config config = new Config { Key = keys };
             return Encoding.Unicode.GetBytes(Encrypt(plain, config));
         }
-
         public override string Encrypt(string plainText, Config config)
         {
             string k = CheckKey(config.Key);
@@ -116,7 +111,6 @@ namespace UWP.Алгоритмы
             flagD = false;
             return GetString(res);
         }
-
         private byte[] GetByteArray(BitArray stream)
         {
             StringBuilder str = new StringBuilder();
@@ -201,6 +195,12 @@ namespace UWP.Алгоритмы
                 Console.WriteLine($"Clock[{i}]:");
                 Clock();
                 part[i] = R1[18] ^ R2[21] ^ R3[22];
+                Console.Write("Текущая гамма: ");
+                for (int j = 0; j < part.Count; j++)
+                {
+                    Console.Write(part[j] ? '1' : '0');
+                }
+                Console.WriteLine();
             }
             return part;
         }
@@ -212,8 +212,8 @@ namespace UWP.Алгоритмы
         */
         private void Clock()
         {
-            PrintR(R1, R2, R3);
             bool majority = Majority();
+            PrintR(R1, R2, R3,majority);
             if (R1[8] == majority)
                 ClockFull(R1, Registers.first);
 
@@ -224,7 +224,7 @@ namespace UWP.Алгоритмы
                 ClockFull(R3, Registers.third);
         }
 
-        private void PrintR(BitArray r1, BitArray r2, BitArray r3)
+        private void PrintR(BitArray r1, BitArray r2, BitArray r3,bool major)
         {
             BitArray[] arr = new BitArray[3];
             arr[0] = r1;
@@ -241,6 +241,8 @@ namespace UWP.Алгоритмы
                 Console.WriteLine($"R{k}: {str}");
                 k++;
             }
+            char maj = major ? '1' : '0';
+            Console.WriteLine($"Мажорити бит:{maj}");
         }
 
         /*

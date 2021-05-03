@@ -152,6 +152,7 @@ namespace UWP.Алгоритмы
 
         private byte[] FullEnc(byte[] data)
         {
+            
             byte[] dataR = new byte[data.Length];
             Array.Copy(data, dataR, data.Length);
             Array.Reverse(dataR);

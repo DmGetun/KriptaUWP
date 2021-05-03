@@ -15,6 +15,8 @@ namespace UWP.Алгоритмы
 
         public override bool IsReplaceText => true;
 
+        public override string Group => "Шифры многозначной замены";
+
         private string Key;
 
         public override string CheckKey(string key)

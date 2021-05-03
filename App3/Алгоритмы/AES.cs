@@ -16,6 +16,8 @@ namespace UWP.Алгоритмы
 
         public override bool IsReplaceText => false;
 
+        public override string Group => "Комбинационные шифры";
+
         private int Nb = 4;
         private int Nk = 4;
         private int Nr;

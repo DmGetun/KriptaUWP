@@ -15,6 +15,13 @@ namespace UWP.Алгоритмы
 
         public override bool IsReplaceText => true;
 
+        public override string Group => "Шифры однозначной замены";
+        /*
+            Функция расшифрования.
+            Получить индекс буквы в алфавите,
+            отнять от индекса текущий шаг и взять модуль от разности.
+            По полученному числу получить букву из алфавита.
+        */
         public override string Decrypt(string cipherText, Config config)
         {
             StringBuilder str = new StringBuilder();
@@ -26,7 +33,6 @@ namespace UWP.Алгоритмы
             string text = Alphabet.CheckText(cipherText);
             foreach (char s in text)
             {
-                int number = Alphabet.CheckSymbol(s);
                 int position = Alphabet.GetSymbol(alf, s);
                 int index = (position - step) % alf.Count;
                 if (index <= 0)
@@ -35,26 +41,12 @@ namespace UWP.Алгоритмы
             }
             return str.ToString();
         }
-
-        public override string CheckKey(string key)
-        {
-            int num;
-            if (string.IsNullOrEmpty(key))
-            {
-                throw new Error(Error.MissingKey);
-            }
-            if (!int.TryParse(key,out num))
-            {
-                throw new Error(Error.StepNumber);
-            }
-            if (int.Parse(key) < 0 || int.Parse(key) >= 32)
-            {
-                throw new Error(Error.LimitKeyCezar);
-            }
-
-            return null;
-        }
-
+        /*
+            Функция шифрования.
+            Получить индекс буквы в алфавите,
+            прибавить к индексу текущий шаг и взять модуль от суммы.
+            По полученному числу получить букву из алфавита.
+        */
         public override string Encrypt(string plainText, Config config)
         {
             StringBuilder str = new StringBuilder();
@@ -73,6 +65,29 @@ namespace UWP.Алгоритмы
                 str.Append(alf[index]);
             }
             return str.ToString();
+        }
+        /*
+            Проверка ключа.
+            Если ключа нет, ключ не число или ключ меньше 0 или больше 32,
+            то ошибка.
+        */
+        public override string CheckKey(string key)
+        {
+            int num;
+            if (string.IsNullOrEmpty(key))
+            {
+                throw new Error(Error.MissingKey);
+            }
+            if (!int.TryParse(key, out num))
+            {
+                throw new Error(Error.StepNumber);
+            }
+            if (int.Parse(key) < 0 || int.Parse(key) >= 32)
+            {
+                throw new Error(Error.LimitKeyCezar);
+            }
+
+            return null;
         }
 
         public override string KeyView()

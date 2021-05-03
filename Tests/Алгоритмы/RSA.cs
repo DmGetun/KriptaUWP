@@ -16,7 +16,10 @@ namespace UWP.Алгоритмы
 
         public override bool IsReplaceText => true;
 
+        public BigInteger N { get; private set; }
+
         private BigInteger P = 123, Q = 677;
+        private BigInteger e;
 
         public override string CheckKey(string key)
         {
@@ -45,7 +48,13 @@ namespace UWP.Алгоритмы
             P = numbers[0];
             Q = numbers[1];
         }
-
+        /*
+            Функция расшифрования.
+            Вычисляем функцию Эйлера от N,
+            вычисляем d.
+            Получаем из шифртекста число,
+            возводим это число в степень d по модулю N.
+        */
         public override string Decrypt(string cipherText, Config config)
         {
             List<string> text = cipherText.Split(' ').ToList<string>();
@@ -55,11 +64,8 @@ namespace UWP.Алгоритмы
             char[] mass = new char[len];
             string key = config.Key;
             ParseKey(key);
-
-            BigInteger N = P * Q;
-            BigInteger f = (P - 1) * (Q - 1);
-            //BigInteger d = Calculate_d(f);
-            BigInteger d = 13;
+            BigInteger f = F(N);
+            BigInteger d = Calculate_d(f);
             Parallel.For(0,len, i=>
             {
                  var bi = BigInteger.Parse(text[i]);
@@ -84,7 +90,12 @@ namespace UWP.Алгоритмы
 
             return r;
         }
-
+        /*
+            Функция шифрования.
+            Вычисляем N,f,d,e
+            Получаем индекс символа в алфавите,
+            возводим индекс в степень e по модулю N
+        */
         public override string Encrypt(string plainText, Config config)
         {
             string alf = new string (Alphabet.GenerateAlphabet().Values.ToArray());
@@ -92,14 +103,11 @@ namespace UWP.Алгоритмы
             string key = config.Key;
             ParseKey(key);
             BigInteger[] numbers = new BigInteger[plainText.Length];
-            BigInteger N = P * Q;
+            N = P * Q;
             BigInteger f = (P - 1) * (Q - 1);
 
-            //BigInteger d = Calculate_d(f);
-            //BigInteger e = Calculate_e(d,f);
-
-            BigInteger d = 13;
-            BigInteger e = 25;
+            BigInteger d = Calculate_d(f);
+            e = Calculate_e(d,f);
 
             int len = plainText.Length;
 
@@ -123,7 +131,7 @@ namespace UWP.Алгоритмы
         {
             return "";
         }
-
+        // проверка на простоту
         private bool IsTheNumberSimple(long n)
         {
             if (n < 2)
@@ -138,7 +146,22 @@ namespace UWP.Алгоритмы
 
             return true;
         }
-
+        // вычисление функции Эйлера
+        private BigInteger F(BigInteger n)
+        {
+            BigInteger result = n;
+            for (BigInteger i = 2; i * i <= n; ++i)
+                if (n % i == 0)
+                {
+                    while (n % i == 0)
+                        n /= i;
+                    result -= result / i;
+                }
+            if (n > 1)
+                result -= result / n;
+            return result;
+        }
+        // вычисление d
         private BigInteger Calculate_d(BigInteger m)
         {
             BigInteger d = m - 1;
@@ -152,6 +175,7 @@ namespace UWP.Алгоритмы
 
             return d;
         }
+        // вычисление e
         private BigInteger Calculate_e(BigInteger d, BigInteger m)
         {
             BigInteger e = 10;
@@ -169,7 +193,19 @@ namespace UWP.Алгоритмы
 
         public override string GenerateKey()
         {
-            throw new NotImplementedException();
+            Random rand = new Random();
+            do
+            {
+                P = rand.Next(1, 500);
+            }
+            while (!IsTheNumberSimple((long)P));
+            do
+            {
+                Q = rand.Next(1, 500);
+            }
+            while (!IsTheNumberSimple((long)Q));
+
+            return $"P={P}\rQ={Q}";
         }
     }
 }

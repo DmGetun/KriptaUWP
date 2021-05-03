@@ -10,9 +10,11 @@ namespace UWP.Алгоритмы
 {
     class Elgamal : Algorithm
     {
+        private BigInteger p,g,x;
+
         public override string Name => "Шифр Elgamal";
 
-        public override string DefaultKey => "p=71 \rg=2 \rx=30";
+        public override string DefaultKey => "p=71\rg=2\rx=30";
 
         public override bool IsReplaceText => true;
 
@@ -38,6 +40,13 @@ namespace UWP.Алгоритмы
             return keys.Select(x => BigInteger.Parse(x)).ToArray();
         }
 
+        /*
+            Функция расшифрования.
+            Разбиваем строку на массив из a,b
+            записываем их в свои массивы.
+            Получаем индекс открытого символа,
+            умножая b на (a^(-1))^x по модулю p.
+        */
         public override string Decrypt(string cipherText, Config config)
         {
             var keys = TransformKey(CheckKey(config.Key));
@@ -64,7 +73,9 @@ namespace UWP.Алгоритмы
               });
             return new string(plain);
         }
-
+        /*
+            Разбить зашифрованную строку на массив из коэффициентов a,b 
+        */
         private int[] GetNumbersText(string cipherText)
         {
             string[] value = cipherText.Trim().Split(" ");
@@ -80,17 +91,24 @@ namespace UWP.Алгоритмы
 
             return numbers;
         }
-
+        /*
+            Функция расшифрования.
+            Вычисляем y, возведя g в степень x по модулю p.
+            Получаем индекс символа в алфавите,
+            Генерируем рандомизатор, взаимно простой с функцией Эйлера,
+            вычисляем a, возведя g в степень k по модулю p
+            Вычисляем b умножая y в степени k на индекс по модулю p
+        */
         public override string Encrypt(string plainText, Config config)
         {
             var keys = TransformKey(CheckKey(config.Key));
             var alf = Alphabet.GenerateAlphabet();
 
-            BigInteger p = keys[0];
+            p = keys[0];
             if (!IsTheNumberSimple(p)) return "Число p не простое.";
 
-            BigInteger g = keys[1];
-            BigInteger x = keys[2];
+            g = keys[1];
+            x = keys[2];
             BigInteger y = Pow(g, x, p);
             BigInteger[] numbers = new BigInteger[plainText.Length];
             BigInteger[] coef = new BigInteger[plainText.Length];
@@ -107,7 +125,7 @@ namespace UWP.Алгоритмы
 
             return FormKey(numbers,coef);
         }
-
+        // формируем ключ из коэффициентов a,b
         private string FormKey(BigInteger[] numbers, BigInteger[] coef)
         {
             StringBuilder rez = new StringBuilder();
@@ -123,7 +141,7 @@ namespace UWP.Алгоритмы
         {
             return "";
         }
-
+        // проверка на простоту
         private bool IsTheNumberSimple(BigInteger n)
         {
             if (n < 2)
@@ -138,7 +156,7 @@ namespace UWP.Алгоритмы
 
             return true;
         }
-
+        // возведение в степень по модулю
         private BigInteger Pow(BigInteger x, BigInteger p, BigInteger m)
         {
             BigInteger r = 1;
@@ -150,7 +168,7 @@ namespace UWP.Алгоритмы
 
             return r;
         }
-
+        // умножение чисел по модулю
         BigInteger mul(BigInteger a, BigInteger b, BigInteger n)
         {// a*b mod n
             BigInteger sum = 0;
@@ -170,7 +188,16 @@ namespace UWP.Алгоритмы
 
         public override string GenerateKey()
         {
-            throw new NotImplementedException();
+            Random rand = new Random();
+            do
+            {
+                p = rand.Next(1, 500);
+            } while (!IsTheNumberSimple(p));
+
+            x = rand.Next(2, (int)p);
+            g = rand.Next(2, (int)p);
+
+            return $"p={p}\rg={g}\rx={x}";
         }
     }
 }

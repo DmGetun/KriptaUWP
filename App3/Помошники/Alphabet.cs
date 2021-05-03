@@ -30,6 +30,8 @@ namespace UWP.Помошники
             {
                 alf[k++] = Convert.ToChar(i);
             }
+            for (int i = '0'; i <= '9'; i++)
+                alf[k++] = Convert.ToChar(i);
 
             return alf;
         }

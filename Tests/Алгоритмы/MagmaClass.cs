@@ -62,44 +62,150 @@ namespace Tests.Алгоритмы
         };
 
         private uint[] _subKeys;
+        private byte[] s;
+        private bool flagD = false;
 
-        public byte[] Decrypt(byte[] data, byte[] key)
+        public byte[] Decrypt(byte[] data, byte[] key, byte[] synhro, string mode)
         {
-            SetKey(key);
-            byte[] dataR = new byte[data.Length];
-            Array.Copy(data, dataR, data.Length);
-            Array.Reverse(dataR);
-
-            uint a0 = BitConverter.ToUInt32(dataR, 0);
-            uint a1 = BitConverter.ToUInt32(dataR, 4);
-
-            byte[] result = new byte[8];
-
-            for (int i = 0; i < 31; i++)
+            if (mode == "simple")
             {
-                int keyIndex = (i < 8) ? i % 8 : 7 - (i % 8) ;
-                uint round = a1 ^ funcG(a0, _subKeys[keyIndex]);
-
-                a1 = a0;
-                a0 = round;
+                flagD = true;
+                return SimpleCipher(data, key);
             }
+            else if (mode == "gamma")
+                return GammaCipher(data, key, synhro);
+            else if (mode == "gammaOut")
+                return GammaOut(data, key, synhro);
+            else if (mode == "gammaText")
+                return GammaText(data, key, synhro);
 
-            a1 ^= funcG(a0, _subKeys[0]);
+            return new byte[0];
+        }
 
-            Array.Copy(BitConverter.GetBytes(a0), 0, result, 0, 4);
-            Array.Copy(BitConverter.GetBytes(a1), 0, result, 4, 4);
+        public byte[] Encrypt(byte[] data, byte[] key,byte[] synhro,string mode)
+        {
+            if (mode == "simple")
+                return SimpleCipher(data, key);
+            else if (mode == "gamma")
+                return GammaCipher(data, key, synhro);
+            else if (mode == "gammaOut")
+                return GammaOut(data, key, synhro);
+            else if (mode == "gammaText")
+                return GammaText(data, key, synhro);
 
-            Array.Reverse(result);
+            return new byte[0];
+        }
+
+        private byte[] GammaText(byte[] data, byte[] key, byte[] synhro)
+        {
+            byte[][] blocks = GiveBlocks(data);
+            byte[] result = new byte[data.Length];
+            s = synhro;
+            for (int i = 0; i < blocks.GetLength(0); i++)
+            {
+                byte[] block = blocks[i];
+                byte[] left = CalcSyn();
+                Console.WriteLine($"Шифрование Входной блок {i + 1} :{BitConverter.ToString(left)}");
+                CalculateSubKeys(key);
+                byte[] gamma = SimpleCipher(left,key);
+                Console.WriteLine($"Шифрование Выходной блок {i + 1} :{BitConverter.ToString(gamma)}");
+                byte[] resBlock = XOR(gamma, block);
+                IncOut(resBlock);
+                Array.Copy(resBlock, 0, result, i * 8, 8);
+            }
             return result;
         }
 
-        public byte[] Encrypt(byte[] data, byte[] key)
+        private byte[] GammaOut(byte[] data, byte[] key, byte[] synhro)
+        {
+            byte[][] blocks = GiveBlocks(data);
+            byte[] result = new byte[data.Length];
+            s = synhro;
+            for (int i = 0; i < blocks.GetLength(0); i++)
+            {
+                byte[] block = blocks[i];
+                byte[] left = CalcSyn();
+                Console.WriteLine($"Шифрование Входной блок {i + 1} :{BitConverter.ToString(left)}");
+                CalculateSubKeys(key);
+                byte[] gamma = SimpleCipher(left,key);
+                Console.WriteLine($"Шифрование Выходной блок {i + 1} :{BitConverter.ToString(gamma)}");
+                IncOut(gamma);
+                Array.Copy(XOR(gamma, block), 0, result, i * 8, 8);
+            }
+            return result;
+        }
+
+        private void IncOut(byte[] gamma)
+        {
+            byte[] temp = new byte[16];
+            Array.Copy(s, 8, temp, 0, 8);
+            Array.Copy(gamma, 0, temp, 8, 8);
+            Array.Copy(temp, 0, s, 0, 16);
+        }
+
+        private byte[] CalcSyn()
+        {
+            return s[..8];
+        }
+
+        private byte[][] GiveBlocks(byte[] data)
+        {
+            int blockSize = 8;
+            byte[][] res = new byte[data.Length / 8][];
+            for (int i = 0; i < res.Length; i++)
+            {
+                res[i] = new byte[8];
+                for (int j = 0; j < blockSize; j++)
+                    res[i][j] = data[i * blockSize + j];
+            }
+            return res;
+        }
+
+        private byte[] GammaCipher(byte[] data, byte[] key,byte[] synhro)
+        {
+            s = synhro;
+            CalculateSubKeys(key);
+            byte[] gamma = SimpleCipher(s, key);
+            IncGamma();
+            return XOR(gamma, data);
+        }
+
+        private byte[] XOR(byte[] block, byte[] data)
+        {
+            byte[] res = new byte[8];
+            for (int i = 0; i < 8; i++)
+                res[i] = (byte)(block[i] ^ data[i]);
+
+            return res;
+        }
+
+        private void IncGamma()
+        {
+            ulong t = BitConverter.ToUInt64(s, 0);
+            t += 1;
+            s = BitConverter.GetBytes(t);
+        }
+
+        private void CalculateSubKeys(byte[] key)
+        {
+            byte[] keyR = new byte[key.Length];
+            uint[] subKeys = new uint[8];
+            Array.Copy(key, keyR, key.Length);
+            Array.Reverse(keyR);
+            for (int i = 0; i < 8; i++)
+            {
+                subKeys[i] = BitConverter.ToUInt32(keyR, i * 4);
+            }
+            Array.Reverse(subKeys);
+            _subKeys = subKeys;
+        }
+
+        private byte[] SimpleCipher(byte[] data, byte[] key)
         {
             SetKey(key);
             byte[] dataR = new byte[data.Length];
             Array.Copy(data, dataR, data.Length);
             Array.Reverse(dataR);
-
             uint a0 = BitConverter.ToUInt32(dataR, 0);
             uint a1 = BitConverter.ToUInt32(dataR, 4);
 
@@ -107,7 +213,9 @@ namespace Tests.Алгоритмы
 
             for (int i = 0; i < 31; i++)
             {
-                int keyIndex = (i < 24) ? i % 8 : 7 - (i % 8);
+                int keyIndex = 0;
+                if(flagD == false) keyIndex = (i < 24) ? i % 8 : 7 - (i % 8);
+                if(flagD == true) keyIndex = (i < 8) ? i % 8 : 7 - (i % 8);
                 uint round = a1 ^ funcG(a0, _subKeys[keyIndex]);
 
                 a1 = a0;

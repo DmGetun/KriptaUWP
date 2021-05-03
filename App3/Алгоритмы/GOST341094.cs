@@ -20,6 +20,8 @@ namespace UWP.Алгоритмы
 
         public override bool IsReplaceText => true;
 
+        public override string Group => "ЦП ГОСТ Р";
+
         public override string CheckKey(string key)
         {
             throw new NotImplementedException();
@@ -207,36 +209,8 @@ namespace UWP.Алгоритмы
 
         public override string GenerateKey()
         {
-            /*            Random rand = new Random();
-                        int p = 0, q = 0, x = 4;
-                        do
-                        {
-                            p = rand.Next(600, 2000);
-                            if (!IsTheNumberSimple(p)) continue;
-                            if (p - 1 <= 2) continue;
-                            q = CalculateQ(p);
-                        } while ((p - 1) % q != 0);
-                        x = rand.Next(2, q);
-
-                        return $"P={p}\rQ={q}\rx={x}";*/
             return "P=31\rQ=5\rx=4";
         }
-
-        /*        private int CalculateQ(int p)
-                {
-                    List<int> som = new List<int>();
-                    for(int i = 0; i < p - 1; i++)
-                    {
-                        if (IsTheNumberSimple(i))
-                            som.Add(i);
-                    }
-
-                    som.Reverse();
-                    foreach (int item in som)
-                        if ((p - 1) % item == 0)
-                            return item;
-                    return 0;
-                }*/
 
         public override string KeyView()
         {

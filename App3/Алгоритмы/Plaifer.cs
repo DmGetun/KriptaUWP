@@ -9,11 +9,13 @@ namespace UWP.Алгоритмы
 {
     class Plaifer : Algorithm
     {
-        public override string Name => "Шифр Плейфера";
+        public override string Name => "Шифр Плэйфера";
 
         public override string DefaultKey => "РЕСПУБЛИКА";
 
         public override bool IsReplaceText => true;
+
+        public override string Group => "Шифры блочной замены";
 
         public char[,] Key;
 

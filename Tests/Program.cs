@@ -15,18 +15,21 @@ namespace Tests
     {
         static void Main(string[] args)
         {
-            GammaReverseTest();
-            int a = 2, b = 6, p = 11;
-            Elliptic ell = new Elliptic(a, b, p);
-            ell.Calculate_Q();
-            Point G = new Point(10, 6);
-            Point rez = ell.GetValue(5, G);
-            Console.WriteLine(rez);
+            A51Test();      
+        }
+
+        private static void A51Test()
+        {
+            A51 a = new();
+            string text = "КТО";
+            string key = "ДИМА";
+            byte[] t = Encoding.Unicode.GetBytes(text);
+            byte[] k = Encoding.Unicode.GetBytes(key);
+            var cypher = a.Encrypt(t, k);
         }
 
         private static void GammaReverseTextTest()
         {
-            Console.WriteLine("МАГМА: Режим гаммирования с обратной связью по шифртексту");
             string plain = "92def06b3c130a59db54c704f8189d204a98fb2e67a8024c8912409b17b57e41";
             string key = "ffeeddccbbaa99887766554433221100f0f1f2f3f4f5f6f7f8f9fafbfcfdfeff";
 
@@ -34,21 +37,18 @@ namespace Tests
             byte[] keys = Split(key, 2);
 
             GammaReverseText a = new();
-            string t = Encoding.Unicode.GetString(text);
-            string k = Encoding.Unicode.GetString(keys);
-            Config conf = new Config() { Key = k };
             string synhro = "1234567890abcdef234567890abcdef1";
             byte[] s = Split(synhro, 2);
-            byte[] sa = new byte[s.Length];
-            s.CopyTo(sa, 0);
+            byte[] news = new byte[s.Length];
+            Array.Copy(s, 0, news, 0, s.Length);
             byte[] rez = a.Encrypt(text, keys, s);
-            byte[] sh = a.Decrypt(rez, keys, sa);
+            byte[] sh = a.Decrypt(rez, keys, news);
             byte[][] rez_ = GiveBlocks(rez);
             byte[][] sh_ = GiveBlocks(sh);
             Console.WriteLine($"Тестовый пример: {plain}");
             Console.WriteLine($"Ключ: {key}");
             Console.WriteLine($"Результат:");
-            for(int i = 0; i < rez_.Length; i++)
+            for (int i = 0; i < rez_.Length; i++)
             {
                 Console.WriteLine($"Блок C[{i}]: {BitConverter.ToString(rez_[i])}");
             }
@@ -135,7 +135,7 @@ namespace Tests
 
         private static void SboxTest()
         {
-            string plain = "fedcba9876543210";
+/*            string plain = "fedcba9876543210";
             string key = "ffeeddccbbaa99887766554433221100f0f1f2f3f4f5f6f7f8f9fafbfcfdfeff";
 
             byte[] text = Split(plain, 2);
@@ -143,11 +143,11 @@ namespace Tests
 
             MagmaClass a = new();
             byte[] rez = a.Encrypt(text, keys);
-            byte[] sh = a.Decrypt(rez,keys);
+            byte[] sh = a.Decrypt(rez, keys);
             Console.WriteLine($"Тестовый пример: {plain}");
             Console.WriteLine($"Ключ: {key}");
             Console.WriteLine($"Результат: {BitConverter.ToString(rez)}");
-            Console.WriteLine($"Расшифрованная фраза: {BitConverter.ToString(sh)}");
+            Console.WriteLine($"Расшифрованная фраза: {BitConverter.ToString(sh)}");*/
         }
 
         private static void KuznecTest()

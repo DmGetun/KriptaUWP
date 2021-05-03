@@ -18,6 +18,8 @@ namespace UWP.Алгоритмы
 
         public BigInteger N { get; private set; }
 
+        public override string Group => "Асимметричные шифры";
+
         private BigInteger P = 113, Q = 677;
         private BigInteger d;
         private BigInteger e;

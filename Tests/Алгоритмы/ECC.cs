@@ -22,7 +22,7 @@ namespace UWP.Алгоритмы
         {
             throw new NotImplementedException();
         }
-
+        // разбить входной ключ на параметры
         private int[] ParseKey(string key)
         {
             string[] keys = key.Split('\r');
@@ -46,7 +46,12 @@ namespace UWP.Алгоритмы
 
             return numbers;
         }
-
+        /*
+            Функция расшифрования.
+            Разбиваем входной текст на R и e.
+            Вычисляем точку Q, выполняя композицию точки R на Cu.
+            Вычисляем открытый 
+        */
         public override string Decrypt(string cipherText, Config config)
         {
             int[] keys = ParseKey(config.Key);

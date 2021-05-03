@@ -23,6 +23,9 @@ namespace UWP.Алгоритмы
         public override bool IsReplaceText => true;
         public int Xa { get; private set; }
         public Point Yu { get; private set; }
+
+        public override string Group => "ЦП ГОСТ Р";
+
         public override string CheckKey(string key)
         {
             throw new NotImplementedException();

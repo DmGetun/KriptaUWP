@@ -17,6 +17,8 @@ namespace UWP.Алгоритмы
 
         public override bool IsReplaceText => true;
 
+        public override string Group => "Шифры блочной замены";
+
         private string Key;
 
         /*
@@ -58,7 +60,7 @@ namespace UWP.Алгоритмы
         private int[] GetDecryptSymbols(List<int[]> vs, double[,] matric)
         {
             List<int[]> a = new List<int[]>();
-            foreach (int[] row in vs)
+            foreach (int[] row in vs) // умножение матрицы на вектор
             {
                 double[] sum = new double[3];
                 for (int i = 0; i < 3; i++)
@@ -69,7 +71,7 @@ namespace UWP.Алгоритмы
             }
             int[] rez = new int[a.Count * 3];
             int k = 0;
-            foreach (int[] elem in a)
+            foreach (int[] elem in a) // полученные числа записываем в массив
             {
                 for (int i = 0; i < elem.Length; i++)
                 {

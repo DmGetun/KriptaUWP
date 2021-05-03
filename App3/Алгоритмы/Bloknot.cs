@@ -10,11 +10,15 @@ namespace UWP.Алгоритмы
     class Bloknot : Algorithm
     {
         GenPCH pch;
-        public override string Name => "Блокнот Шеннона";
+        public override string Name => "Шифр Блокнот Шеннона";
 
         public override string DefaultKey => "a=557\rc=7229\rt=3";
 
         public override bool IsReplaceText => true;
+
+        public override string Group => "Шифры гаммирования";
+
+        public int[] Gamma { get; private set; }
 
         public string Key = string.Empty;
 
@@ -86,6 +90,7 @@ namespace UWP.Алгоритмы
             
             pch = new GenPCH(plainText,a,c,t);
             int[] numbers = pch.Generate();
+            Gamma = numbers;
             List<int> numbersSymbols = new List<int>();
             foreach(char s in plainText)
             {
@@ -126,7 +131,12 @@ namespace UWP.Алгоритмы
 
         public override string KeyView()
         {
-            return Key;
+            StringBuilder str = new StringBuilder();
+            foreach(int num in Gamma)
+            {
+                str.Append(num + " ");
+            }
+            return str.ToString();
         }
 
         /*

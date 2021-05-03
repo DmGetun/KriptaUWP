@@ -15,13 +15,15 @@ namespace UWP.Алгоритмы
 
         public override bool IsReplaceText => true;
 
+        public override string Group => "Шифры многозначной замены";
+
         public override string CheckKey(string key)
         {
             return null;
         }
 
         /*
-        * расшифровка.
+        * Функция расшифрования.
         * Получаем на вход текст, идем по каждому символу,
         * в таблице Тритемия ищем строку по текущему номеру символа,
         * в ней находим наш зашифрованный символ, по его номеру
@@ -29,16 +31,16 @@ namespace UWP.Алгоритмы
         */
         public override string Decrypt(string cipherText, Config config)
         {
-            var alf = new string(Alphabet.GenerateAlphabet().Values.ToArray()); // таблица Тритемия
+            var alf = new string(Alphabet.GenerateAlphabet().Values.ToArray());
 
             StringBuilder plainText = new StringBuilder();
             for (int i = 0; i < cipherText.Length; i++)
             {
                 char symbol = cipherText[i];
-
-                int index = alf.IndexOf(symbol);
-                int plainIndex = (index - i) % alf.Length;
+                int index = alf.IndexOf(symbol); // индекс символа в алфавите
+                int plainIndex = (index - i) % alf.Length; // отнимаем номер текущего символа в тексте
                 if (plainIndex < 0) plainIndex += alf.Length;
+
                 char plainSymbol = alf[plainIndex];
                 plainText.Append(plainSymbol);
             }
@@ -59,8 +61,8 @@ namespace UWP.Алгоритмы
             for (int i = 0; i < plainText.Length; i++)
             {
                 char symbol = plainText[i];
-                int index = alf.IndexOf(symbol);
-                int cipherIndex = (index + i)% alf.Length;
+                int index = alf.IndexOf(symbol); // индекс символа в алфавите
+                int cipherIndex = (index + i)% alf.Length; // прибавляем к индексу номер текущего символа в тексте
                 if (cipherIndex < 0) cipherIndex += alf.Length;
                 char cipherSymbol = alf[cipherIndex]; // зашифрованный символ по номеру строки и позиции символа
                 cipherText.Append(cipherSymbol);

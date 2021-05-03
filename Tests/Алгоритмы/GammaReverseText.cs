@@ -115,10 +115,12 @@ namespace Tests.Алгоритмы
             {
                 byte[] block = blocks[i];
                 byte[] left = CalcSyn();
+                Console.WriteLine($"Расшифрование Входной блок {i + 1} :{BitConverter.ToString(left)}");
                 CalculateSubKeys(key);
                 byte[] gamma = FullEnc(left);
+                Console.WriteLine($"Расшифрование Выходной блок {i + 1} :{BitConverter.ToString(gamma)}");
                 byte[] resBlock = XOR(gamma, block);
-                Inc(resBlock);
+                Inc(block);
                 Array.Copy(resBlock, 0, result, i * 8, 8);
             }
             return result;

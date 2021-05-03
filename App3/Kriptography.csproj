@@ -136,8 +136,6 @@
     <Compile Include="Алгоритмы\ECC.cs" />
     <Compile Include="Алгоритмы\Elgamal.cs" />
     <Compile Include="Алгоритмы\ElgamalCP.cs" />
-    <Compile Include="Алгоритмы\GammaGost28147.cs" />
-    <Compile Include="Алгоритмы\GOST28147.cs" />
     <Compile Include="Алгоритмы\GOST341094.cs" />
     <Compile Include="Алгоритмы\Kardano.cs" />
     <Compile Include="Алгоритмы\Kuznec.cs" />

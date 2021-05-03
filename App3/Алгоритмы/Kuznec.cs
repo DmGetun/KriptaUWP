@@ -27,18 +27,15 @@ namespace UWP.Алгоритмы
 
         private byte[] resultArray;
 
-        private static byte[] l_vec = {
-             1, (byte) 148, 32, (byte) 133, 16, (byte) 194, (byte) 192, 1,
-             (byte) 251, 1, (byte) 192, (byte) 194, 16, (byte) 133, 32, (byte) 148
-        };
-
-        public override string Name => "Кузнечик";
+        public override string Name => "Шифр Кузнечик";
 
         public override string DefaultKey => "1234567890123456";
 
         public override bool IsReplaceText => false;
 
         public byte[] Key { get; private set; }
+
+        public override string Group => "Комбинационные шифры";
 
         /*
             Проверка ключа на длину в 256 бит 
@@ -101,6 +98,11 @@ namespace UWP.Алгоритмы
             return Encoding.Unicode.GetString(result);
         }
 
+        /*
+            Функция шифрования блока.
+            9 раз применяем к блоку процедуру LSX с раундовым ключом.
+            На 10 раз складываем блок и ключ раунда по модулю 2.
+        */
         public byte[] Encrypt(byte[] data)
         {
             byte[] block = new byte[BLOCK_SIZE];
@@ -118,7 +120,12 @@ namespace UWP.Алгоритмы
 
             return block;
         }
-
+        /*
+            Функция расшифрования блока.
+            9 раз применяем на блок процедуру, обратную LSX с раундовым ключом,
+            начиная отсчет ключей с конца.
+            На 10 раз выполняем сложение блока с ключом по модулю 2.
+        */
         public byte[] Decrypt(byte[] data)
         {
             byte[] block = new byte[BLOCK_SIZE];
@@ -138,14 +145,13 @@ namespace UWP.Алгоритмы
 
             return block;
         }
-
+        /*
+            Функция получения раундовых ключей из исходного.
+            Первые два ключа равны половинам исходного,
+            остальные вычисляются с помощью процедур C и F.
+        */
         public void SetKey(byte[] key)
         {
-
-            /*
-             * Initialize SubKeys array
-             */
-
             _subKeys = new byte[10][];
             for (int i = 0; i < 10; i++)
             {
@@ -156,11 +162,6 @@ namespace UWP.Алгоритмы
             byte[] y = new byte[SUB_LENGTH];
 
             byte[] c = new byte[SUB_LENGTH];
-
-            /*
-             * SubKey[1] = k[255..128]
-             * SubKey[2] = k[127..0]
-             */
 
             for (int i = 0; i < SUB_LENGTH; i++)
             {
@@ -179,12 +180,9 @@ namespace UWP.Алгоритмы
 
                 Array.Copy(x, _subKeys[2 * k], SUB_LENGTH);
                 Array.Copy(y, _subKeys[2 * k + 1], SUB_LENGTH);
-
             }
-
         }
-
-
+        // умножение в поле Галуа.
         private static byte kuz_mul_gf256_slow(byte a, byte b)
         {
             byte p = 0;
@@ -202,19 +200,26 @@ namespace UWP.Алгоритмы
             }
             return p;
         }
-
-
-
+        /*
+            Процедура S.
+            Заменяет каждый байт входного массива на байт из таблицы замен.
+        */
         private void S(ref byte[] data)
         {
             data = data.Select(i => _pi[i]).ToArray();
         }
-
+        /*
+            Обратная процедура S.
+            Заменяет каждый байт входного массива на байт из обратной таблицы замен.
+        */
         private void ReverseS(ref byte[] data)
         {
             data = data.Select(i => _reversepi[i]).ToArray();
         }
-
+        /*
+            Процедура X.
+            Выполняет сложение по модулю 2 двух массивов
+        */
         private void X(ref byte[] result, ref byte[] data)
         {
             for (int i = 0; i < result.Length; i++)
@@ -222,7 +227,10 @@ namespace UWP.Алгоритмы
                 result[i] ^= data[i];
             }
         }
-
+        /*
+            Операция l.
+            Выполняет сложение по модулю 2 произведения каждого байта массива на константу в поле Галуа.
+        */
         private byte l(ref byte[] data)
         {
             byte x = data[15];
@@ -232,7 +240,12 @@ namespace UWP.Алгоритмы
             }
             return x;
         }
-
+        /*
+            Процедура R.
+            Сдвигает полученный массив в сторону младших разярдов,
+            а на место старшего ставит результат процедуры l исходного массива
+            в поле Галуа.
+        */
         private void R(ref byte[] data)
         {
             byte z = l(ref data);
@@ -242,7 +255,11 @@ namespace UWP.Алгоритмы
             }
             data[0] = z;
         }
-
+        /*
+            Обратная процедура R.
+            Выполняет сдвиг массива в сторону старших разрядов,
+            а на место младшего ставит результат процедуры l сдвинутого массива в поле Галуа
+        */
         private void ReverseR(ref byte[] data)
         {
             byte z = data[0];
@@ -258,7 +275,10 @@ namespace UWP.Алгоритмы
             temp[15] = r;
             Array.Copy(temp, 0, data, 0, 16);
         }
-
+        /*
+            Процедура L.
+            Применяет процедуру R 16 раз.
+        */
         private void L(ref byte[] data)
         {
             for (int i = 0; i < 16; i++)
@@ -266,7 +286,10 @@ namespace UWP.Алгоритмы
                 R(ref data);
             }
         }
-
+        /*
+            Обратная процедура L.
+            Применяет обратную процедуру R 16 раз.
+        */
         private void ReverseL(ref byte[] data)
         {
             for (int i = 0; i < 16; i++)
@@ -274,7 +297,10 @@ namespace UWP.Алгоритмы
                 ReverseR(ref data);
             }
         }
-
+        /*
+            Процедура F.
+            Применяет процедуру LSX и X на два переданных ключа.
+        */
         private void F(ref byte[] k, ref byte[] a1, ref byte[] a0)
         {
             byte[] temp = new byte[SUB_LENGTH];
@@ -286,7 +312,10 @@ namespace UWP.Алгоритмы
             Array.Copy(temp, a1, SUB_LENGTH);
 
         }
-
+        /*
+            Процедура LSX.
+            Последовательно применяет процедуры X,S,L 
+        */
         private void LSX(ref byte[] result, ref byte[] k, ref byte[] a)
         {
             Array.Copy(k, result, BLOCK_SIZE);
@@ -294,16 +323,21 @@ namespace UWP.Алгоритмы
             S(ref result);
             L(ref result);
         }
-
+        /*
+            Обратная процедура LSX.
+            Последовательно применяет процедуры X,L,S
+        */
         private void ReverseLSX(ref byte[] result, ref byte[] k, ref byte[] a)
         {
             Array.Copy(k, result, BLOCK_SIZE);
             X(ref result, ref a);
             ReverseL(ref result);
             ReverseS(ref result);
-            Console.WriteLine(BitConverter.ToString(result));
         }
-
+        /*
+            Процедура вычисления константы.
+            Константа получается применением процедуры L на индекс константы.
+        */
         private void C(ref byte[] c, int i)
         {
             Array.Clear(c, 0, SUB_LENGTH);

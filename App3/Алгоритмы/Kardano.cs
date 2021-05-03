@@ -9,11 +9,13 @@ namespace UWP.Алгоритмы
 {
     class Kardano : Algorithm
     {
-        public override string Name => "Решетка Кардано";
+        public override string Name => "Шифр Решетка Кардано";
 
         public override string DefaultKey => Algorithm.NonKey;
 
         public override bool IsReplaceText => true;
+
+        public override string Group => "Шифры блочной замены";
 
         public string Key;
 

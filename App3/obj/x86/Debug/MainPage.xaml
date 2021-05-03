@@ -6,7 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    Background="{ThemeResource SystemAccentColor}">
 
     <Grid x:ConnectionId='2' x:Name="ButtonGrid">
         <Grid x:ConnectionId='3' x:Name="ContentArea" Margin="251,0,0,0">
@@ -17,30 +17,30 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="1*"/>
                 <RowDefinition Height="4*"/>
-                <RowDefinition Height="3.0*"/>
-                <RowDefinition Height="1*"/>
+                <RowDefinition Height="2.0*"/>
                 <RowDefinition Height="4*"/>
             </Grid.RowDefinitions>
 
             <TextBlock x:ConnectionId='4' x:Name="AlgName" Grid.Row="0" Grid.Column="0" Text="Текущий алгоритм шифрования:" Margin="5,7,0,0"></TextBlock>
 
+            <TextBlock x:ConnectionId='5' x:Name="ModText" Grid.Row="0" Grid.Column="0" Text="Текущий режим работы:" Margin="5,35,0,0"></TextBlock>
+            <ComboBox x:ConnectionId='6' x:Name="ModName" Width="300" Grid.Row="0" Grid.Column="0" Text="Текущий режим работы:" Margin="170,30,0,0"></ComboBox>
+
             <TextBlock Grid.Row="1" Text="Исходная фраза:" Margin="5,0,0,0"></TextBlock>
-            <TextBox x:ConnectionId='5' x:Name="OriginalText" Margin="0,20,5,0" Grid.Row="1" TextWrapping="Wrap" Grid.RowSpan="1" PlaceholderText="Введите исходную фразу"/>
+            <TextBox x:ConnectionId='7' x:Name="OriginalText" Margin="0,20,5,0" Grid.Row="1" TextWrapping="Wrap" Grid.RowSpan="1" PlaceholderText="Введите исходную фразу"/>
 
             <TextBlock Grid.Row="2" Grid.Column="0" Text="Ключ:" Margin="5,7,0,0"></TextBlock>
-            <TextBox x:ConnectionId='6' x:Name="KeyArea" Grid.Row="2" Margin="0,30,5,0"  TextWrapping="Wrap" AcceptsReturn="True"/>
-
-            <Button x:ConnectionId='7' x:Name="GenerateKey" Grid.Row="3" Grid.Column="0" Margin="5,0,5,0">Генерация ключа</Button>
+            <TextBox x:ConnectionId='8' x:Name="KeyArea" Grid.Row="2" Margin="0,30,5,0"  TextWrapping="Wrap" AcceptsReturn="True"/>
 
             <TextBlock Grid.Row="4" Grid.Column="0" Text="Зашифрованная фраза:" Margin="5,7,0,0"></TextBlock>
-            <TextBox x:ConnectionId='8' x:Name="cypherTextArea" Margin="0,30,5,0" Grid.Row="4" TextWrapping="Wrap" Grid.RowSpan="1" PlaceholderText="Зашифрованная фраза"/>
+            <TextBox x:ConnectionId='9' x:Name="cypherTextArea" Margin="0,30,5,0" Grid.Row="4" TextWrapping="Wrap" Grid.RowSpan="1" PlaceholderText="Зашифрованная фраза"/>
 
             <TextBlock Grid.Row="4" Grid.Column="1" Text="Расшифрованная фраза:" Margin="10,7,0,0"></TextBlock>
-            <TextBox x:ConnectionId='9' x:Name="plainTextArea" Margin="5,30,0,0" Grid.Row="4" Grid.Column="1" TextWrapping="Wrap" Grid.RowSpan="1" PlaceholderText="Расшифрованная фраза"/>
+            <TextBox x:ConnectionId='10' x:Name="plainTextArea" Margin="5,30,0,0" Grid.Row="4" Grid.Column="1" TextWrapping="Wrap" Grid.RowSpan="1" PlaceholderText="Расшифрованная фраза"/>
             <TextBlock Grid.Row="2" Grid.Column="1" Margin="10,7,0,0" Text="Вид ключа и ошибки:"></TextBlock>
-            <TextBox x:ConnectionId='10' x:Name="ErrorArea" Margin="5,30,0,0" Grid.Row="2" Grid.Column="1" TextWrapping="Wrap" Grid.RowSpan="1" PlaceholderText="Сообщения об ошибке" IsReadOnly="True"/>
+            <TextBox x:ConnectionId='11' x:Name="ErrorArea" Margin="5,30,0,0" Grid.Row="2" Grid.Column="1" TextWrapping="Wrap" Grid.RowSpan="1" PlaceholderText="Сообщения об ошибке" IsReadOnly="True"/>
             <TextBlock Grid.Row="1" Grid.Column="1" Margin="5,0,0,0" Text="Вид внутри программы:"></TextBlock>
-            <TextBox x:ConnectionId='11' x:Name="ViewText" Margin="5,20,0,0" Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Grid.RowSpan="1" PlaceholderText="Вид внутри программы" IsReadOnly="True"/>
+            <TextBox x:ConnectionId='12' x:Name="ViewText" Margin="5,20,0,0" Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Grid.RowSpan="1" PlaceholderText="Вид внутри программы" IsReadOnly="True"/>
         </Grid>
     </Grid>
 </Page>

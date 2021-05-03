@@ -10,11 +10,13 @@ namespace UWP.Алгоритмы
 {
     class A52 : Algorithm
     {
-        public override string Name => "A5/2";
+        public override string Name => "Шифр A5/2";
 
         public override string DefaultKey => "1kkk";
 
         public override bool IsReplaceText => false;
+
+        public override string Group => "Поточные шифры";
 
         private byte[] Key;
 

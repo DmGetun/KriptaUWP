@@ -11,11 +11,13 @@ namespace UWP.Алгоритмы
 {
     class A51 : Algorithm
     {
-        public override string Name => "A5/1";
+        public override string Name => "Шифр A5/1";
 
         public override string DefaultKey => "1kkk";
 
         public override bool IsReplaceText => false;
+
+        public override string Group => "Поточные шифры";
 
         BitArray R1 = new BitArray(19);
         BitArray R2 = new BitArray(22);

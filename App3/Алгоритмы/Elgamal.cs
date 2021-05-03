@@ -20,6 +20,8 @@ namespace UWP.Алгоритмы
 
         public int TextLen { get; private set; }
 
+        public override string Group => "Асимметричные шифры";
+
         /*
             Проверка ключа.
             Получаем строковый ключ,
@@ -59,6 +61,8 @@ namespace UWP.Алгоритмы
                     throw new Error(Error.InvalidValueKey);
                 numbers[i++] = number;
             }
+            if (!IsTheNumberSimple(numbers[0]))
+                throw new Error("Число p не простое");
             return numbers;
         }
         /*
@@ -131,8 +135,6 @@ namespace UWP.Алгоритмы
             var alf = Alphabet.GenerateAlphabet();
             TextLen = plainText.Length;
             p = keys[0];
-            if (!IsTheNumberSimple(p)) return "Число p не простое.";
-
             g = keys[1];
             x = keys[2];
             y = Pow(g, x, p);

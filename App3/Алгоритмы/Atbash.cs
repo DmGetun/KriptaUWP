@@ -15,6 +15,8 @@ namespace UWP.Алгоритмы
 
         public override bool IsReplaceText => true;
 
+        public override string Group => "Шифры однозначной замены";
+
         /*
             Шифрование шифром Атбаш. Получаем номер буквы в алфавите, 
             прибавляем единицу т.к. отсчет в массиве начинается с нуля,

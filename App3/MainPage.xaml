@@ -6,7 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    Background="{ThemeResource SystemAccentColor}">
 
     <Grid x:Name="ButtonGrid">
         <Grid x:Name="ContentArea" Margin="251,0,0,0">
@@ -17,20 +17,20 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="1*"/>
                 <RowDefinition Height="4*"/>
-                <RowDefinition Height="3.0*"/>
-                <RowDefinition Height="1*"/>
+                <RowDefinition Height="2.0*"/>
                 <RowDefinition Height="4*"/>
             </Grid.RowDefinitions>
 
             <TextBlock x:Name="AlgName" Grid.Row="0" Grid.Column="0" Text="Текущий алгоритм шифрования:" Margin="5,7,0,0"></TextBlock>
+
+            <TextBlock x:Name="ModText" Grid.Row="0" Grid.Column="0" Text="Текущий режим работы:" Margin="5,35,0,0"></TextBlock>
+            <ComboBox x:Name="ModName" Width="300" Grid.Row="0" Grid.Column="0" Text="Текущий режим работы:" Margin="170,30,0,0"></ComboBox>
 
             <TextBlock Grid.Row="1" Text="Исходная фраза:" Margin="5,0,0,0"></TextBlock>
             <TextBox x:Name="OriginalText" Margin="0,20,5,0" Grid.Row="1" TextWrapping="Wrap" Grid.RowSpan="1" PlaceholderText="Введите исходную фразу"/>
 
             <TextBlock Grid.Row="2" Grid.Column="0" Text="Ключ:" Margin="5,7,0,0"></TextBlock>
             <TextBox x:Name="KeyArea" Grid.Row="2" Margin="0,30,5,0"  TextWrapping="Wrap" AcceptsReturn="True"/>
-
-            <Button x:Name="GenerateKey" Grid.Row="3" Grid.Column="0" Margin="5,0,5,0">Генерация ключа</Button>
 
             <TextBlock Grid.Row="4" Grid.Column="0" Text="Зашифрованная фраза:" Margin="5,7,0,0"></TextBlock>
             <TextBox x:Name="cypherTextArea" Margin="0,30,5,0" Grid.Row="4" TextWrapping="Wrap" Grid.RowSpan="1" PlaceholderText="Зашифрованная фраза"/>

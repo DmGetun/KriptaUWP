@@ -17,6 +17,8 @@ namespace UWP.Алгоритмы
 
         public override bool IsReplaceText => true;
 
+        public override string Group => "Шифры блочной замены";
+
         /*
             расшифровка шифра вертикальной перестановки
         */
