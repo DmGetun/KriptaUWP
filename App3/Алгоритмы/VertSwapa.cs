@@ -36,13 +36,16 @@ namespace UWP.Алгоритмы
             cipherText = RestoreSpace(cipherText,keys,rows,cols);
             return cipherText;
         }
+        /*
+            Получить порядковые номера букв ключа по алфавиту. 
+        */
         private int[] GetKeyNumbers(string key)
         {
             int[] numbers = new int[key.Length];
             var alf = Alphabet.GenerateAlphabet();
             var alf_f = new string(alf.Values.ToArray<char>());
             StringBuilder str = new StringBuilder(key);
-            foreach (char s in alf_f) // восстнавливаем исходную таблицу, записывая колонки в соответствии с индексом символов ключа.
+            foreach (char s in alf_f)
             {
                 while (str.ToString().IndexOf(s) != -1)
                 {
@@ -53,29 +56,28 @@ namespace UWP.Алгоритмы
             }
             return numbers;
         }
+        // Восстановление пробелов
         private string RestoreSpace(string input, int[] key, int rows,int cols)
         {
             int strLen = input.Length;
             char[,] table = new char[rows, cols];
-            string[] temp = new string[rows * cols];
             key = ReplaceKey(key);
             int spaceCount = rows * cols - strLen;
-            int[] k = key;
             int[] l = new int[key.Length];
             int fullLen = 0;
+
+            // По длине ключа получить количество букв в каждом столбце 
             for (int i = 0; i < key.Length; i++)
                 if (i < key.Length - spaceCount)
                     l[i] = rows;
                 else
                     l[i] = rows - 1;
 
-            StringBuilder str = new StringBuilder();
-            for (int i = 0; i < rows * cols; i++)
+            for (int i = input.Length; i < rows * cols; i++)
                 input += " ";
-            string res = string.Empty;
-            int start = 0;
+
             List<int> indexKey = new List<int>(key);
-            if(rows % 2 == 1) // справа
+            if(rows % 2 == 1) // пробелы находятся справа
             {
                 Formtable(input, key, ref table, l, ref fullLen, indexKey);
             }
@@ -87,17 +89,19 @@ namespace UWP.Алгоритмы
 
             return RestoreTable(table,key).Trim();
         }
+        // Сформировать исходную таблицу с открытым текстом
         private void Formtable(string input, int[] key, ref char[,] table, int[] l, ref int fullLen, List<int> indexKey)
         {
             int step = 0;
             for (int i = 0; i < key.Length; i++)
             {
-                    step = indexKey.IndexOf(i);
-                    string row = input.Substring(fullLen, l[step]);
+                    step = indexKey.IndexOf(i); // получаем исходный номер столбца
+                    string row = input.Substring(fullLen, l[step]); // берем из строки буквы в количестве, полученном из l
                     fullLen += row.Length;
                     AddRow(ref table, row, step);
             }
         }
+        // Выписать открытый текст из таблицы
         private string RestoreTable(char[,] table, int[] key)
         {
             string res = string.Empty;
@@ -115,6 +119,9 @@ namespace UWP.Алгоритмы
                     
             return res;
         }
+        /*
+            Добавить строку в таблицу открытого текста 
+        */
         private void AddRow(ref char[,] table, string row, int start)
         {
             for (int i = 0; i < table.GetLength(0); i++)
@@ -127,19 +134,17 @@ namespace UWP.Алгоритмы
                 table[i, start] = row[i];
             }
         }
+        // Получить порядок выписывания столбцов по ключу
         private int[] ReplaceKey(int[] key)
         {
             int[] t = new int[key.Length];
             List<int> a = new List<int>(key);
-            int j = 0;
-            for(int i = 0; i < 33; i++)
+            for(int i = 0; i < key.Length; i++)
             {
-                while (a.IndexOf(i) != -1)
-                {
-                    int index = a.IndexOf(i);
-                    t[index] = j++;
-                    a[index] = -2;
-                }
+                int min = a.Min();
+                int index = a.IndexOf(min); // вернуть индекс минимального элемента
+                t[index] = min - min + i; // вычислить, каким будет выписан столбец
+                a[index] = int.MaxValue;
             }
             return t;
         }
@@ -160,16 +165,23 @@ namespace UWP.Алгоритмы
             var alf = Alphabet.GenerateAlphabet();
             var alf_f = alf.Values.ToArray<char>();
             List<int> indexes = new List<int>();
-            foreach (char s in key) // получаем индексы символов в алфавите
+            foreach (char s in key) // получаем индексы символов ключа в алфавите
             {
                 indexes.Add(Alphabet.GetSymbol(alf, s));
             }
             int rows = table.GetLength(0);
-            int cols = table.GetLength(1);
 
             StringBuilder str = new StringBuilder(key);
-            StringBuilder encryptTable = new StringBuilder();
 
+            var encryptTable = GetResultString(table, alf_f, rows, str);
+
+            return encryptTable.ToString().Replace(" ", "");
+        }
+
+        // Получить итоговую строку по таблице и ключу
+        private static StringBuilder GetResultString(char[,] table, char[] alf_f, int rows, StringBuilder str)
+        {
+            StringBuilder encryptTable = new StringBuilder();
             foreach (char s in alf_f) // выписываем колонки в соответствиии с ключом.
             {
                 while (str.ToString().IndexOf(s) != -1)
@@ -182,7 +194,7 @@ namespace UWP.Алгоритмы
                     }
                 }
             }
-            return encryptTable.ToString().Replace(" ","");
+            return encryptTable;
         }
 
         // записываем исходный текст в таблицу

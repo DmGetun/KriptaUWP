@@ -83,6 +83,7 @@ namespace UWP.Алгоритмы
             p = keys[0];
             if (!IsTheNumberSimple((long)p))
                 throw new Error("Ошибка: число p должно быть простым");
+
             g = keys[1];
             x = keys[2];
             if (!(x < p - 1))

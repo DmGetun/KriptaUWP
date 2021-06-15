@@ -19,7 +19,7 @@
     <DeployOptionalPackages>false</DeployOptionalPackages>
     <WindowsSdkPath>C:\Program Files %28x86%29\Windows Kits\10\</WindowsSdkPath>
     <LayoutDir>C:\Users\Admin\source\repos\App3\App3\bin\x86\Debug\AppX</LayoutDir>
-    <RegisteredManifestChecksum>2A263A260B1B25F5B6F1087A5FBAFF9EB57464CD4A50A352010E400A9191E4B7</RegisteredManifestChecksum>
+    <RegisteredManifestChecksum>F0B2815F23AAA178B4EA22FB506F40846DA1CA63901283AED63C529E08B54C19</RegisteredManifestChecksum>
     <RegisteredPackageMoniker>3752856e-b4ef-4357-afd1-7eadaa6e19d7_1.0.0.0_x86__5gyrq6psz227t</RegisteredPackageMoniker>
     <RegisteredUserModeAppID>3752856e-b4ef-4357-afd1-7eadaa6e19d7_5gyrq6psz227t!App</RegisteredUserModeAppID>
     <RegisteredPackageID>3752856e-b4ef-4357-afd1-7eadaa6e19d7</RegisteredPackageID>
@@ -30,13 +30,13 @@
     <AppXManifest Include="C:\Users\Admin\source\repos\App3\App3\bin\x86\Debug\Core\AppxManifest.xml">
       <PackagePath>AppxManifest.xml</PackagePath>
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
-      <Modified>2021-05-02T19:03:34.663</Modified>
+      <Modified>2021-06-07T21:28:21.166</Modified>
     </AppXManifest>
   </ItemGroup>
   <ItemGroup>
-    <AppxPackagedFile Include="C:\Users\Admin\source\repos\App3\App3\bin\x86\Debug\App3.exe">
-      <PackagePath>entrypoint\App3.exe</PackagePath>
-      <Modified>2021-05-02T19:03:34.009</Modified>
+    <AppxPackagedFile Include="C:\Users\Admin\source\repos\App3\App3\bin\x86\Debug\Сryptography.exe">
+      <PackagePath>entrypoint\Сryptography.exe</PackagePath>
+      <Modified>2021-06-07T21:28:20.493</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Program Files %28x86%29\Microsoft SDKs\UWPNuGetPackages\runtime.win10-x86.microsoft.netcore.universalwindowsplatform\6.2.11\runtimes\win10-x86\lib\uap10.0.15138\System.Runtime.dll">
       <PackagePath>System.Runtime.dll</PackagePath>
@@ -84,17 +84,17 @@
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
       <Modified>2021-03-31T17:42:09.106</Modified>
     </AppxPackagedFile>
-    <AppxPackagedFile Include="C:\Users\Admin\source\repos\App3\App3\bin\x86\Debug\App3.xr.xml">
-      <PackagePath>App3.xr.xml</PackagePath>
-      <Modified>2021-05-01T23:41:26.572</Modified>
+    <AppxPackagedFile Include="C:\Users\Admin\source\repos\App3\App3\bin\x86\Debug\Сryptography.xr.xml">
+      <PackagePath>Сryptography.xr.xml</PackagePath>
+      <Modified>2021-05-03T17:01:16.578</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Admin\source\repos\App3\App3\bin\x86\Debug\App.xbf">
       <PackagePath>App.xbf</PackagePath>
-      <Modified>2021-05-02T18:41:26.801</Modified>
+      <Modified>2021-06-07T21:28:20.311</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Admin\source\repos\App3\App3\bin\x86\Debug\MainPage.xbf">
       <PackagePath>MainPage.xbf</PackagePath>
-      <Modified>2021-05-02T18:41:26.801</Modified>
+      <Modified>2021-06-07T21:28:20.311</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Program Files %28x86%29\Windows Kits\10\UnionMetadata\10.0.19041.0\Windows.winmd">
       <PackagePath>WinMetadata\Windows.winmd</PackagePath>
@@ -102,11 +102,11 @@
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Admin\source\repos\App3\App3\bin\x86\Debug\resources.pri">
       <PackagePath>resources.pri</PackagePath>
-      <Modified>2021-05-01T23:23:19.403</Modified>
+      <Modified>2021-05-03T17:02:22.679</Modified>
     </AppxPackagedFile>
-    <AppxPackagedFile Include="C:\Users\Admin\source\repos\App3\App3\bin\x86\Debug\Core\App3.exe">
-      <PackagePath>App3.exe</PackagePath>
-      <Modified>2021-05-02T19:03:34.658</Modified>
+    <AppxPackagedFile Include="C:\Users\Admin\source\repos\App3\App3\bin\x86\Debug\Core\Сryptography.exe">
+      <PackagePath>Сryptography.exe</PackagePath>
+      <Modified>2021-06-07T21:28:21.161</Modified>
     </AppxPackagedFile>
   </ItemGroup>
   <ItemGroup>

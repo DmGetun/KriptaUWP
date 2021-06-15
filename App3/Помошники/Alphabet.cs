@@ -193,11 +193,11 @@ namespace UWP.Помошники
             return text;
         }
 
-        public static string ReplaceTextBeforeEncrypt(string text,string algoritm)
+        public static string ReplaceTextBeforeEncrypt(string text,Algorithm algoritm)
         {
             text = text.Replace(" ", "ПРБЛ").Replace(",", "ЗПТ").Replace(".", "ТЧК").Replace("-", "ТИРЕ");
             text = text.Replace("\r\r", "ДАБЛНОВСТР").Replace("\r", "НОВСТР");
-            if (algoritm == "Шифр Плейфера")
+            if (algoritm.Name == "Шифр Плейфера")
             {
                 text = text.Replace('Ъ', 'Ь').Replace('Й', 'И').Replace('Ё', 'Е');
                 text = text.Replace('ъ', 'ь').Replace('й', 'и').Replace('ё', 'е');

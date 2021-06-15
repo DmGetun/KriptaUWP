@@ -78,10 +78,15 @@ namespace UWP.Помошники
 
             BigInteger ap = ((3 * (int)Math.Pow(x, 2) + a) * BigInteger.Pow(2 * y, f)) % p;
             if (ap < 0) ap = p + ap;
+            Console.WriteLine($"2{point}: a = {ap}");
+
             BigInteger x3 = (BigInteger.Pow(ap, 2) - (2 * x)) % p;
             if (x3 < 0) x3 = p + x3;
+            Console.WriteLine($"({point}): x3 = {x3}");
+
             BigInteger y3 = (ap * (x - x3) - y) % p;
             if (y3 < 0) y3 = p + y3;
+            Console.WriteLine($"({point}): y3 = {y3}");
             
             return new Point((int)x3,(int)y3);
         }
@@ -100,11 +105,15 @@ namespace UWP.Помошники
 
             BigInteger ap = (y2 - y1) * BigInteger.Pow(x2 - x1, f) % p;
             if (ap < 0) ap = p + ap;
-            
+            Console.WriteLine($"{point1} + {point2}: a = {ap}");
+
             BigInteger x3 = (BigInteger.Pow(ap, 2) - x1 - x2) % p;
             if (x3 < 0) x3 = p + x3;
+            Console.WriteLine($"{point1} + {point2}: x3 = {x3}");
+
             BigInteger y3 = (ap * (x1 - x3) - y1) % p;
             if (y3 < 0) y3 = p + y3;
+            Console.WriteLine($"{point1} + {point2}: y3 = {y3}");
 
             return new Point((int)x3, (int)y3);
         }

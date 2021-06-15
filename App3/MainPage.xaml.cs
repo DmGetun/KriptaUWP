@@ -17,13 +17,8 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
-// Документацию по шаблону элемента "Пустая страница" см. по адресу https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x419
-
 namespace App3
 {
-    /// <summary>
-    /// Пустая страница, которую можно использовать саму по себе или для перехода внутри фрейма.
-    /// </summary>
     public sealed partial class MainPage : Page
     {
         List<Algorithm> listAlgorithm;
@@ -33,8 +28,6 @@ namespace App3
         Algorithm algoritm;
         Config config;
         string text = string.Empty;
-        Brush defaultColorButton;
-        Dictionary<string, Dictionary<string, Algorithm>> dictItems;
 
         public List<Button> AllButtons { get; private set; }
 
@@ -45,12 +38,8 @@ namespace App3
             this.Arrange(new Rect(0, 0, this.DesiredSize.Width, this.DesiredSize.Height));
             listAlgorithm = new List<Algorithm>();
             dictAlgorithm = new Dictionary<string, Algorithm>();
-            dictItems = new Dictionary<string, Dictionary<string, Algorithm>>();
             CreateAlgorithms();
             this.SizeChanged += MainPage_SizeChanged;
-            var color = new Button().Background;
-            defaultColorButton = color;
-            algoritm = listAlgorithm[1];
             config = new Config();
             OriginalText.TextChanged += OriginalText_TextChanged;
             cypherTextArea.TextChanged += CypherTextArea_TextChanged;
@@ -61,6 +50,9 @@ namespace App3
             AddChangeMod();
         }
 
+        /*
+            Добавить режимы работы Магмы в поле выбора режима 
+        */
         private void AddChangeMod()
         {
             ModName.SelectionChanged += ModName_SelectionChanged;
@@ -71,7 +63,9 @@ namespace App3
             ModName.SelectedItem = ModName.Items[0];
             ModName.SelectedValue = "Режим простой замены";
         }
-
+        /*
+            Изменить текущий режим работы Магмы 
+        */
         private void ModName_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             ComboBox item = sender as ComboBox;
@@ -82,20 +76,39 @@ namespace App3
             config.Mode = name;
             OriginalText_TextChanged(null,null);
         }
-
+        /*
+            Событие при изменении содержимого поля ключа.
+            Вызывает событие смены содержимого поля открытого текста
+            или поля зашифрованного текста
+        */
         private void KeyArea_TextChanged(object sender, TextChangedEventArgs e)
         {
-            OriginalText_TextChanged(null, null);
-        }
+            text = OriginalText.Text;
 
+            if (!string.IsNullOrEmpty(text))
+                OriginalText_TextChanged(null, null);
+            else
+                CypherTextArea_TextChanged(null, null);
+        }
+        /*
+            Событие нажатия на кнопку генерации ключа.
+            Вызывает функцию генерации ключа текущего алгоритма 
+            и устанавливает полученный ключ в поле ключа.
+        */
         private void GenerateKey_Click(object sender, RoutedEventArgs e)
         {
             string key = algoritm.GenerateKey();
             if (key == null) return;
             KeyArea.Text = key;
-            OriginalText_TextChanged(null, null);
         }
-
+        /*
+            Событие при изменении содержимого поля шифрованного текста.
+            Получает значения ключа и зашифрованного текста,
+            передает это в функцию дешифрования алгоритма,
+            при необходимости производит обработку полученного текста,
+            устанавливает расшифрованный текст в поле расшифрованного текста.
+            Выводит внутренний вид ключа в поле Вид ключа.
+        */
         private void CypherTextArea_TextChanged(object sender, TextChangedEventArgs e)
         {
             try
@@ -105,7 +118,7 @@ namespace App3
                 if (string.IsNullOrEmpty(cypher)) return;
                 plain = algoritm.Decrypt(cypher, config);
                 if (algoritm.IsReplaceText)
-                    plain = ReplaceTextAfterDecrypt(plain);
+                    plain = Alphabet.ReplaceTextAfterDecrypt(plain);
                 plainTextArea.Text = plain;
                 string keyView = algoritm.KeyView();
                 ErrorArea.Text = keyView;
@@ -115,7 +128,9 @@ namespace App3
                 ErrorArea.Text = error.Message;
             }
         }
-
+        /*
+            Событие при изменении поля открытого текста.         
+        */
         private void OriginalText_TextChanged(object sender, TextChangedEventArgs e)
         {
             try
@@ -123,14 +138,12 @@ namespace App3
                 Reset();
 
                 text = OriginalText.Text;
-
-                if (algoritm.IsReplaceText)
-                    text = ReplaceTextBeforeEncrypt(text);
-
                 if (string.IsNullOrEmpty(text)) return;
-
                 if (algoritm.IsReplaceText)
+                {
+                    text = Alphabet.ReplaceTextBeforeEncrypt(text, algoritm);
                     text = text.ToUpper();
+                }
 
                 config.Key = KeyArea.Text;
                 ViewText.Text = text;
@@ -142,31 +155,10 @@ namespace App3
                 ErrorArea.Text = error.Message;
             }
         }
-
-        private string ReplaceTextBeforeEncrypt(string text)
-        {
-            text = text.Replace(" ", "ПРБЛ").Replace(",", "ЗПТ").Replace(".", "ТЧК").Replace("-","ТИРЕ");
-            text = text.Replace("\r\r","ДАБЛНОВСТР").Replace("\r", "НОВСТР");
-            if (algoritm.Name == "Шифр Плейфера")
-            {
-                text = text.Replace('Ъ', 'Ь').Replace('Й', 'И').Replace('Ё', 'Е');
-                text = text.Replace('ъ', 'ь').Replace('й', 'и').Replace('ё', 'е');
-            }
-            StringBuilder str = new StringBuilder();
-            foreach (char s in text)
-            {
-                if ((s >= 'А' && s <= 'Я') || (s >= 'а' && s <= 'я') || (s >= '0' && s <='9'))
-                    str.Append(s);
-            }
-
-            return str.ToString();
-        }
-
-        private string ReplaceTextAfterDecrypt(string text)
-        {
-            return text.Replace("ПРБЛ", " ").Replace("ЗПТ", ",").Replace("ТЧК", ".").Replace("ТИРЕ","-").Replace("ДАБЛНОВСТР","\r\r").Replace("НОВСТР","\r");
-        }
-
+        /*
+            Событие изменения размера окна программы.
+            Меняет размеры элементов.
+        */
         private void MainPage_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             int i = 0;
@@ -179,7 +171,12 @@ namespace App3
                 button.Margin = new Thickness(0, button.Height * i++, 0, 0);
             }
         }
-
+        /*
+            Функция добавления всех алгоритмов в общий список.
+            Добавляем алгоритмы в общий список,
+            создаем словарь сопоставления имени и класса
+            для дальнейшего переключения между алгоритмами.
+        */
         private void PushAlgorithms()
         {
             listAlgorithm.Add(new Atbash()); // Шифр АТБАШ 0
@@ -212,7 +209,6 @@ namespace App3
                 string name = alg.Name;
                 dictAlgorithm.Add(name, alg);
             }
-            List<Dictionary<string, Algorithm>> a = new List<Dictionary<string, Algorithm>>();
             foreach(var key in dictAlgorithm.Keys)
             {
                 Dictionary<string, Algorithm> t = new Dictionary<string, Algorithm>();
@@ -222,7 +218,10 @@ namespace App3
             KeyArea.Text = algoritm.DefaultKey;
             CreateButtons();
         }
-
+        /*
+            Функция создания кнопок групп алгоритмов.
+            Для каждой группы создаем свою кнопку на панели выбора алгоритмов.
+        */
         private void CreateButtons()
         {
             AllButtons = new List<Button>();
@@ -242,7 +241,7 @@ namespace App3
         private void SwapCipher()
         {
             MenuFlyoutItem diffhell = new MenuFlyoutItem();
-            diffhell.Click += Atbash_Click;
+            diffhell.Click += ButtonAlgoritmName_Click;
             diffhell.Text = "Диффи-Хеллман";
             MenuFlyout odnZamena = new MenuFlyout();
             odnZamena.Placement = FlyoutPlacementMode.Bottom;
@@ -258,10 +257,10 @@ namespace App3
         private void GostCipher()
         {
             MenuFlyoutItem gost94 = new MenuFlyoutItem();
-            gost94.Click += Atbash_Click;
+            gost94.Click += ButtonAlgoritmName_Click;
             gost94.Text = "ГОСТ Р 34.10-94";
             MenuFlyoutItem gost12 = new MenuFlyoutItem();
-            gost12.Click += Atbash_Click;
+            gost12.Click += ButtonAlgoritmName_Click;
             gost12.Text = "ГОСТ Р 34.10-2012";
             MenuFlyout odnZamena = new MenuFlyout();
             odnZamena.Placement = FlyoutPlacementMode.Bottom;
@@ -278,10 +277,10 @@ namespace App3
         private void CPCipher()
         {
             MenuFlyoutItem rsa = new MenuFlyoutItem();
-            rsa.Click += Atbash_Click;
+            rsa.Click += ButtonAlgoritmName_Click;
             rsa.Text = "ЦП RSA";
             MenuFlyoutItem elgamal = new MenuFlyoutItem();
-            elgamal.Click += Atbash_Click;
+            elgamal.Click += ButtonAlgoritmName_Click;
             elgamal.Text = "ЦП Elgamal";
             MenuFlyout odnZamena = new MenuFlyout();
             odnZamena.Placement = FlyoutPlacementMode.Bottom;
@@ -298,13 +297,13 @@ namespace App3
         private void AsymmetricCipher()
         {
             MenuFlyoutItem rsa = new MenuFlyoutItem();
-            rsa.Click += Atbash_Click;
+            rsa.Click += ButtonAlgoritmName_Click;
             rsa.Text = "Шифр RSA";
             MenuFlyoutItem elgamal = new MenuFlyoutItem();
-            elgamal.Click += Atbash_Click;
+            elgamal.Click += ButtonAlgoritmName_Click;
             elgamal.Text = "Шифр Elgamal";
             MenuFlyoutItem ecc = new MenuFlyoutItem();
-            ecc.Click += Atbash_Click;
+            ecc.Click += ButtonAlgoritmName_Click;
             ecc.Text = "Шифр ЕСС";
             MenuFlyout odnZamena = new MenuFlyout();
             odnZamena.Placement = FlyoutPlacementMode.Bottom;
@@ -318,17 +317,16 @@ namespace App3
             buttonZamen.Flyout = odnZamena;
             AllButtons.Add(buttonZamen);
         }
-
         private void CombCipher()
         {
             MenuFlyoutItem magma = new MenuFlyoutItem();
-            magma.Click += Atbash_Click;
+            magma.Click += ButtonAlgoritmName_Click;
             magma.Text = "Шифр Магма";
             MenuFlyoutItem aes = new MenuFlyoutItem();
-            aes.Click += Atbash_Click;
+            aes.Click += ButtonAlgoritmName_Click;
             aes.Text = "Шифр AES";
             MenuFlyoutItem kuznechik = new MenuFlyoutItem();
-            kuznechik.Click += Atbash_Click;
+            kuznechik.Click += ButtonAlgoritmName_Click;
             kuznechik.Text = "Шифр Кузнечик";
             MenuFlyout odnZamena = new MenuFlyout();
             odnZamena.Placement = FlyoutPlacementMode.Bottom;
@@ -346,10 +344,10 @@ namespace App3
         private void StreamCipher()
         {
             MenuFlyoutItem a51 = new MenuFlyoutItem();
-            a51.Click += Atbash_Click;
+            a51.Click += ButtonAlgoritmName_Click;
             a51.Text = "Шифр A5/1";
             MenuFlyoutItem a52 = new MenuFlyoutItem();
-            a52.Click += Atbash_Click;
+            a52.Click += ButtonAlgoritmName_Click;
             a52.Text = "Шифр A5/2";
             MenuFlyout odnZamena = new MenuFlyout();
             odnZamena.Placement = FlyoutPlacementMode.Bottom;
@@ -366,7 +364,7 @@ namespace App3
         private void GammaCipher()
         {
             MenuFlyoutItem bloknot = new MenuFlyoutItem();
-            bloknot.Click += Atbash_Click;
+            bloknot.Click += ButtonAlgoritmName_Click;
             bloknot.Text = "Шифр Блокнот Шеннона";
             MenuFlyout odnZamena = new MenuFlyout();
             odnZamena.Placement = FlyoutPlacementMode.Bottom;
@@ -382,10 +380,10 @@ namespace App3
         private void TransCipher()
         {
             MenuFlyoutItem vert = new MenuFlyoutItem();
-            vert.Click += Atbash_Click;
+            vert.Click += ButtonAlgoritmName_Click;
             vert.Text = "Шифр вертикальной перестановки";
             MenuFlyoutItem kardano = new MenuFlyoutItem();
-            kardano.Click += Atbash_Click;
+            kardano.Click += ButtonAlgoritmName_Click;
             kardano.Text = "Шифр Решетка Кардано";
             MenuFlyout odnZamena = new MenuFlyout();
             odnZamena.Placement = FlyoutPlacementMode.Bottom;
@@ -403,10 +401,10 @@ namespace App3
         {
             MenuFlyoutItem matric = new MenuFlyoutItem();
             matric.Text = "Матричный шифр";
-            matric.Click += Atbash_Click;
+            matric.Click += ButtonAlgoritmName_Click;
             MenuFlyoutItem plaifer = new MenuFlyoutItem();
             plaifer.Text = "Шифр Плэйфера";
-            plaifer.Click += Atbash_Click;
+            plaifer.Click += ButtonAlgoritmName_Click;
             MenuFlyout odnZamena = new MenuFlyout();
             odnZamena.Placement = FlyoutPlacementMode.Bottom;
             odnZamena.ShowMode = FlyoutShowMode.TransientWithDismissOnPointerMoveAway;
@@ -422,13 +420,13 @@ namespace App3
         private void MnogoZamena()
         {
             MenuFlyoutItem tritemi = new MenuFlyoutItem();
-            tritemi.Click += Atbash_Click;
+            tritemi.Click += ButtonAlgoritmName_Click;
             tritemi.Text = "Шифр Тритемия";
             MenuFlyoutItem belazo = new MenuFlyoutItem();
-            belazo.Click += Atbash_Click;
+            belazo.Click += ButtonAlgoritmName_Click;
             belazo.Text = "Шифр Белазо";
             MenuFlyoutItem visener = new MenuFlyoutItem();
-            visener.Click += Atbash_Click;
+            visener.Click += ButtonAlgoritmName_Click;
             visener.Text = "Шифр Виженера";
             MenuFlyout odnZamena = new MenuFlyout();
             odnZamena.Placement = FlyoutPlacementMode.Bottom;
@@ -446,14 +444,14 @@ namespace App3
         private void OdnZamena()
         {
             MenuFlyoutItem atbash = new MenuFlyoutItem();
-            atbash.Click += Atbash_Click;
+            atbash.Click += ButtonAlgoritmName_Click;
             atbash.Text = "Шифр Атбаш";
             MenuFlyoutItem cezar = new MenuFlyoutItem();
             cezar.Text = "Шифр Цезаря";
-            cezar.Click += Atbash_Click;
+            cezar.Click += ButtonAlgoritmName_Click;
             MenuFlyoutItem polibii = new MenuFlyoutItem();
             polibii.Text = "Шифр Полибия";
-            polibii.Click += Atbash_Click;
+            polibii.Click += ButtonAlgoritmName_Click;
             MenuFlyout odnZamena = new MenuFlyout();
             odnZamena.Placement = FlyoutPlacementMode.Bottom;
             odnZamena.ShowMode = FlyoutShowMode.TransientWithDismissOnPointerMoveAway;
@@ -466,8 +464,12 @@ namespace App3
             buttonZamen.Flyout = odnZamena;
             AllButtons.Add(buttonZamen);
         }
-
-        private void Atbash_Click(object sender, RoutedEventArgs e)
+        /*
+            Событие нажатия на всплывающее меню с алгоритмом шифрования
+            Получаем имя выбранного алгоритма,
+            меняем текущий алгоритм на выбранный.
+        */
+        private void ButtonAlgoritmName_Click(object sender, RoutedEventArgs e)
         {
             MenuFlyoutItem item = sender as MenuFlyoutItem;
             if (item == null) return;
@@ -478,7 +480,11 @@ namespace App3
             KeyArea.Text = algoritm.DefaultKey;
             Reset();
         }
-
+        /*
+            Функция добавления кнопок с алгоритмами на панель.
+            Добавляем кнопки на панель, окрашиваем.
+            
+        */
         private void CreateAlgorithms()
         {
             PushAlgorithms();
@@ -491,11 +497,16 @@ namespace App3
             Button but = new Button();
             but.Content = "Генерация ключа";
             but.VerticalAlignment = VerticalAlignment.Bottom;
-            but.Background = new SolidColorBrush(Color.FromArgb(255, 86, 11, 115));
+            but.Background = new SolidColorBrush(Color.FromArgb(80, 242, 29, 166));
             but.Click += GenerateKey_Click;
             ButtonGrid.Children.Add(but);
         }
-
+        /*
+            Функция сброса полей.
+            Сбрасывает поля Вид ключа и Вид внутри программы,
+            Показывает или скрывает режимы работы магмы,
+            окрашивает кнопку с группой текущего алгоритма шифрования.
+        */
         private void Reset()
         {
             ErrorArea.Text = string.Empty;

@@ -224,6 +224,7 @@ namespace UWP.Алгоритмы
             string temp = keys[keys.Length - 1].Replace("(", "").Replace(")", "");
             string[] pt = temp.Substring(temp.IndexOf("=") + 1).Split(",");
             int X, Y;
+            // вырезать точку
             if (!int.TryParse(pt[0], out X))
                 throw new Error(Error.InvalidValueKey);
             if (!int.TryParse(pt[1], out Y))

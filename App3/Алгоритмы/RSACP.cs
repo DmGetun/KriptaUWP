@@ -45,7 +45,7 @@ namespace UWP.Алгоритмы
                 throw new Error("Неверный формат сообщения для получателя");
 
             BigInteger f = F(N);
-            message = Alphabet.ReplaceTextBeforeEncrypt(message,"rsacp");
+            message = Alphabet.ReplaceTextBeforeEncrypt(message,new RSACP());
             BigInteger hash = GetHashMessage(message, N);
             hash_ = hash;
 
@@ -84,6 +84,7 @@ namespace UWP.Алгоритмы
             BigInteger[] keys = ParseKey(config.Key);
             BigInteger p = keys[0];
             BigInteger q = keys[1];
+
             if (!IsTheNumberSimple(p)) throw new Error("Число p не простое");
             if (!IsTheNumberSimple(q)) throw new Error("Число q не простое");
 

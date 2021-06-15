@@ -61,6 +61,7 @@ namespace UWP.Алгоритмы
                     throw new Error(Error.InvalidValueKey);
                 numbers[i++] = number;
             }
+            // проверка числа P на простоту
             if (!IsTheNumberSimple(numbers[0]))
                 throw new Error("Число p не простое");
             return numbers;
@@ -137,14 +138,26 @@ namespace UWP.Алгоритмы
             p = keys[0];
             g = keys[1];
             x = keys[2];
+
+            if (x >= p || x <= 1)
+                throw new Error("Число x должно быть больше 1 и меньше p");
+            if (g >= p || g <= 1)
+                throw new Error("Число g должно быть больше 1 и меньше p");
+
             y = Pow(g, x, p);
             BigInteger[] numbers = new BigInteger[plainText.Length];
             BigInteger[] coef = new BigInteger[plainText.Length];
             var rand = new Random();
             Parallel.For(0, plainText.Length, i =>
             {
+                BigInteger k;
                 int m = Alphabet.GetSymbol(alf, plainText[i]);
-                BigInteger k = rand.Next() % (p - 2) - 1;
+                do
+                {
+                    k = rand.Next() % (p - 2) - 1;
+                }
+                while (!IsMutuAllySimple(k, p - 1));
+
                 BigInteger a = Pow(g, k, p);
                 BigInteger b = mul(Pow(y, k, p), m, p);
                 coef[i] = a;
@@ -158,6 +171,25 @@ namespace UWP.Алгоритмы
             Получаем массив чисел и коэффициенты.
             Собираем их в строку (a,b)...
         */
+
+        private bool IsMutuAllySimple(BigInteger a, BigInteger b)
+        {
+            return NOD(a, b) == 1;
+        }
+        /*
+            Функция вычисления НОД двух чисел.
+        */
+        public static BigInteger NOD(BigInteger a, BigInteger b)
+        {
+            while (b != 0)
+            {
+                var temp = b;
+                b = a % b;
+                a = temp;
+            }
+            return a;
+        }
+
         private string FormKey(BigInteger[] numbers, BigInteger[] coef)
         {
             StringBuilder rez = new StringBuilder();

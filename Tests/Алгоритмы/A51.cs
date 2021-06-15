@@ -109,6 +109,10 @@ namespace UWP.Алгоритмы
                 }
             }
             flagD = false;
+            for (int j = 0; j < res.Count; j++)
+            {
+                Console.Write(res[j] ? '1' : '0');
+            }
             return GetString(res);
         }
         private byte[] GetByteArray(BitArray stream)

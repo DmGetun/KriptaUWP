@@ -38,14 +38,6 @@ namespace UWP.Алгоритмы
 
         public override string Group => "Комбинационные шифры";
 
-        /*
-         * Magma cipher implementation
-         */
-
-        /// <summary>
-        /// Substitution Table
-        /// id-tc26-gost-28147-param-Z
-        /// </summary>
         private readonly byte[][] _sBox =
         {
             //            0     1     2     3     4     5     6     7     8     9     A     B     C     D     E     F
@@ -337,7 +329,7 @@ namespace UWP.Алгоритмы
         public override string KeyView()
         {
             byte[] key = Encoding.Unicode.GetBytes(Key);
-            return string.Join(" ", key.Select(x => Convert.ToString(x, 2)));
+            return BitConverter.ToString(key);
         }
         /*
             Функция шифрования текста.

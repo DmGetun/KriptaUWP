@@ -25,8 +25,8 @@
     </AppXManifest>
   </ItemGroup>
   <ItemGroup>
-    <AppxPackagedFile Include="C:\Users\Admin\source\repos\App3\App3\bin\x86\Debug\App3.exe">
-      <PackagePath>entrypoint\App3.exe</PackagePath>
+    <AppxPackagedFile Include="C:\Users\Admin\source\repos\App3\App3\bin\x86\Debug\Сryptography.exe">
+      <PackagePath>entrypoint\Сryptography.exe</PackagePath>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Program Files %28x86%29\Microsoft SDKs\UWPNuGetPackages\runtime.win10-x86.microsoft.netcore.universalwindowsplatform\6.2.11\runtimes\win10-x86\lib\uap10.0.15138\System.Runtime.dll">
       <PackagePath>System.Runtime.dll</PackagePath>
@@ -64,8 +64,8 @@
       <PackagePath>Assets\Wide310x150Logo.scale-200.png</PackagePath>
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
     </AppxPackagedFile>
-    <AppxPackagedFile Include="C:\Users\Admin\source\repos\App3\App3\bin\x86\Debug\App3.xr.xml">
-      <PackagePath>App3.xr.xml</PackagePath>
+    <AppxPackagedFile Include="C:\Users\Admin\source\repos\App3\App3\bin\x86\Debug\Сryptography.xr.xml">
+      <PackagePath>Сryptography.xr.xml</PackagePath>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Admin\source\repos\App3\App3\bin\x86\Debug\App.xbf">
       <PackagePath>App.xbf</PackagePath>
@@ -79,8 +79,8 @@
     <AppxPackagedFile Include="C:\Users\Admin\source\repos\App3\App3\bin\x86\Debug\resources.pri">
       <PackagePath>resources.pri</PackagePath>
     </AppxPackagedFile>
-    <AppxPackagedFile Include="C:\Users\Admin\source\repos\App3\App3\bin\x86\Debug\Core\App3.exe">
-      <PackagePath>App3.exe</PackagePath>
+    <AppxPackagedFile Include="C:\Users\Admin\source\repos\App3\App3\bin\x86\Debug\Core\Сryptography.exe">
+      <PackagePath>Сryptography.exe</PackagePath>
     </AppxPackagedFile>
   </ItemGroup>
   <ItemGroup>

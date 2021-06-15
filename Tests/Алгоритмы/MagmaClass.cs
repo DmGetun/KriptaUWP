@@ -165,7 +165,9 @@ namespace Tests.Алгоритмы
         {
             s = synhro;
             CalculateSubKeys(key);
+            Console.WriteLine(BitConverter.ToString(s));
             byte[] gamma = SimpleCipher(s, key);
+            Console.WriteLine(BitConverter.ToString(gamma));
             IncGamma();
             return XOR(gamma, data);
         }
@@ -209,6 +211,10 @@ namespace Tests.Алгоритмы
             uint a0 = BitConverter.ToUInt32(dataR, 0);
             uint a1 = BitConverter.ToUInt32(dataR, 4);
 
+            Console.Write(BitConverter.ToString(BitConverter.GetBytes(a0)).Replace("-","") + " ");
+            Console.Write(BitConverter.ToString(BitConverter.GetBytes(a1)).Replace("-",""));
+            Console.WriteLine();
+
             byte[] result = new byte[8];
 
             for (int i = 0; i < 31; i++)
@@ -220,6 +226,9 @@ namespace Tests.Алгоритмы
 
                 a1 = a0;
                 a0 = round;
+                Console.Write(BitConverter.ToString(BitConverter.GetBytes(a0)) + " ");
+                Console.Write(BitConverter.ToString(BitConverter.GetBytes(a1)));
+                Console.WriteLine();
             }
 
             a1 ^= funcG(a0, _subKeys[0]);

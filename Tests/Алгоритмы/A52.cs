@@ -104,6 +104,11 @@ namespace UWP.Алгоритмы
                     res.Set(index, value);
                 }
             }
+            Console.Write("Результат: ");
+            for (int j = 0; j < res.Count; j++)
+            {
+                Console.Write(res[j] ? '1' : '0');
+            }
             return GetString(res);
         }
 
@@ -168,12 +173,22 @@ namespace UWP.Алгоритмы
             BitArray part = new BitArray(bitCount);
             for (int i = 0; i < bitCount; i++)
             {
+                Console.WriteLine($"Clock[{i}]:");
                 Clock();
                 bool bit1 = MajorityForBits(R1[12], R1[14], R1[15]);
+                Console.WriteLine($"Мажорити бит для R1:{bit1}");
                 bool bit2 = MajorityForBits(R2[9], R2[13], R2[16]);
+                Console.WriteLine($"Мажорити бит для R2:{bit2}");
                 bool bit3 = MajorityForBits(R3[13], R3[16], R3[18]);
+                Console.WriteLine($"Мажорити бит для R3:{bit3}");
 
                 part[i] = bit1 ^ R1[18] ^ bit2 ^ R2[21] ^ bit3 ^ R3[22];
+                Console.Write("Текущая гамма: ");
+                for (int j = 0; j < part.Count; j++)
+                {
+                    Console.Write(part[j] ? '1' : '0');
+                }
+                Console.WriteLine();
             }
             return part;
         }
@@ -186,6 +201,7 @@ namespace UWP.Алгоритмы
         private void Clock()
         {
             bool majority = Majority();
+            PrintR(R1, R2, R3, R4, majority);
             if (R4[10] == majority)
                 ClockFull(R1, Registers.first);
 
@@ -196,6 +212,36 @@ namespace UWP.Алгоритмы
                 ClockFull(R3, Registers.third);
 
             ClockFull(R4, Registers.fourth);
+        }
+
+        public byte[] Encrypt(byte[] text, byte[] key)
+        {
+            string plain = Encoding.Unicode.GetString(text);
+            string keys = Encoding.Unicode.GetString(key);
+            Config config = new Config { Key = keys };
+            return Encoding.Unicode.GetBytes(Encrypt(plain, config));
+        }
+
+        private void PrintR(BitArray r1, BitArray r2, BitArray r3,BitArray r4, bool major)
+        {
+            BitArray[] arr = new BitArray[4];
+            arr[0] = r1;
+            arr[1] = r2;
+            arr[2] = r3;
+            arr[3] = r4;
+            int k = 1;
+            foreach (var a in arr)
+            {
+                StringBuilder str = new StringBuilder();
+                for (int i = a.Count - 1; i >= 0; i--)
+                {
+                    str.Append(a[i] ? '1' : '0');
+                }
+                Console.WriteLine($"R{k}: {str}");
+                k++;
+            }
+            char maj = major ? '1' : '0';
+            Console.WriteLine($"Мажорити бит:{maj}");
         }
 
         //Функция сдвига всех регистров без учета мажоритарной функции. 

@@ -1,8 +1,5 @@
 C:\Users\Admin\source\repos\App3\App3\bin\x86\Debug\App.xbf
 C:\Users\Admin\source\repos\App3\App3\bin\x86\Debug\MainPage.xbf
-C:\Users\Admin\source\repos\App3\App3\bin\x86\Debug\App3.xr.xml
-C:\Users\Admin\source\repos\App3\App3\bin\x86\Debug\App3.exe
-C:\Users\Admin\source\repos\App3\App3\bin\x86\Debug\App3.pdb
 C:\Users\Admin\source\repos\App3\App3\bin\x86\Debug\resources.pri
 C:\Users\Admin\source\repos\App3\App3\bin\x86\Debug\AppxManifest.xml
 C:\Users\Admin\source\repos\App3\App3\bin\x86\Debug\Core\App3.exe
@@ -23,8 +20,6 @@ C:\Users\Admin\source\repos\App3\App3\obj\x86\Debug\MainPage.xbf
 C:\Users\Admin\source\repos\App3\App3\obj\x86\Debug\XamlSaveStateFile.xml
 C:\Users\Admin\source\repos\App3\App3\obj\x86\Debug\Kriptography.csproj.CoreCompileInputs.cache
 C:\Users\Admin\source\repos\App3\App3\obj\x86\Debug\Kriptography.csproj.CopyComplete
-C:\Users\Admin\source\repos\App3\App3\obj\x86\Debug\App3.exe
-C:\Users\Admin\source\repos\App3\App3\obj\x86\Debug\App3.pdb
 C:\Users\Admin\source\repos\App3\App3\obj\x86\Debug\ResourceHandlingTask.state
 C:\Users\Admin\source\repos\App3\App3\obj\x86\Debug\priconfig.xml
 C:\Users\Admin\source\repos\App3\App3\obj\x86\Debug\priconfig.xml.intermediate
@@ -43,3 +38,9 @@ C:\Users\Admin\source\repos\App3\App3\obj\x86\Debug\qualifiers.txt.intermediate
 C:\Users\Admin\source\repos\App3\App3\obj\x86\Debug\MultipleQualifiersPerDimensionFound.txt
 C:\Users\Admin\source\repos\App3\App3\obj\x86\Debug\ProjectArchitectures.txt
 C:\Users\Admin\source\repos\App3\App3\obj\x86\Debug\.winmd_cache\$Microsoft.UI.Xaml.Markup.winmd_637424707200000000.json
+C:\Users\Admin\source\repos\App3\App3\bin\x86\Debug\Сryptography.xr.xml
+C:\Users\Admin\source\repos\App3\App3\bin\x86\Debug\Сryptography.exe
+C:\Users\Admin\source\repos\App3\App3\bin\x86\Debug\Сryptography.pdb
+C:\Users\Admin\source\repos\App3\App3\bin\x86\Debug\Core\Сryptography.exe
+C:\Users\Admin\source\repos\App3\App3\obj\x86\Debug\Сryptography.exe
+C:\Users\Admin\source\repos\App3\App3\obj\x86\Debug\Сryptography.pdb

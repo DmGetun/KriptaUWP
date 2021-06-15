@@ -159,8 +159,6 @@ namespace UWP.Алгоритмы
         }
         public override string Encrypt(string plainText, Config config)
         {
-            //string plain = "32 43 f6 a8 88 5a 30 8d 31 31 98 a2 e0 37 07 34".Replace(" ", "");
-            //string key_ = "2b 7e 15 16 28 ae d2 a6 ab f7 15 88 09 cf 4f 3c".Replace(" ","");
             string plain = "00112233445566778899aabbccddeeff";
             string key_ = "000102030405060708090a0b0c0d0e0f";
 

@@ -51,6 +51,7 @@ namespace UWP.Алгоритмы
             BigInteger h = new BigInteger(stribog.GetHashMessage(text)) % q;
             if (h < 0) h = -h;
             if ((h % q) == 0) h = 1;
+            h = GetHashMessage(text, p);
 
             BigInteger v = Pow(h, q - 2, q);
             if (v < 0) v += q;
@@ -101,10 +102,12 @@ namespace UWP.Алгоритмы
             x = keys[2];
             CheckNumbers(p, q, x);
 
-            a = Calculate_a(p, q);
+            //a = Calculate_a(p, q);
+            a = 8;
 
             Stribog stribog = new Stribog();
             BigInteger h = new BigInteger(stribog.GetHashMessage(plainText)) % q;
+            h = GetHashMessage(plainText, p);
             if (h < 0) h = -h;
             if ((h % q) == 0) h = 1;
             BigInteger r = 0;
@@ -113,6 +116,7 @@ namespace UWP.Алгоритмы
             do
             {
                 BigInteger k = Calculate_k(q);
+                k = 2;
                 rr = Pow(a, k, p);
                 if (rr < 0) rr += p;
                 r = rr % q;
@@ -121,6 +125,18 @@ namespace UWP.Алгоритмы
                 if (s < 0) s += q;
             } while (r == 0 || s == 0);
             return $"{plainText},({r},{s})";
+        }
+
+        private BigInteger GetHashMessage(string plainText, BigInteger p)
+        {
+            var alf = Alphabet.GenerateAlphabet();
+            int h = 0;
+            foreach (char s in plainText)
+            {
+                int index = Alphabet.GetSymbol(alf, s);
+                h = (int)((Math.Pow((h + index), 2)) % (int)p);
+            }
+            return h;
         }
         /*
             Проверка чисел 
@@ -134,7 +150,7 @@ namespace UWP.Алгоритмы
             if (x >= q)
                 throw new Error("Число x должно быть меньше q");
             if ((p - 1) % q != 0)
-                throw new Error("Число q не является сомножителем числа p -1");
+                throw new Error("Число q не является сомножителем числа p - 1");
         }
         /*
             Проверка на простоту числа 
